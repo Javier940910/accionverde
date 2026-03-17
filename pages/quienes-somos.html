@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Quiénes Somos — Verdes por Acción</title>
+<link rel="stylesheet" href="../assets/css/pages.css"/>
+<style>
+.historia-grid{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center;}
+.historia-text p{color:rgba(168,219,184,.6);font-size:.9rem;line-height:1.85;margin-bottom:1.1rem;}
+.historia-visual{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.hv-card{background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:1.5rem 1.2rem;text-align:center;transition:all .28s;}
+.hv-card:hover{border-color:var(--border2);transform:translateY(-5px);background:rgba(58,140,87,.08);}
+.hv-num{font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:700;color:var(--white);line-height:1;display:block;}
+.hv-lbl{font-size:.68rem;color:rgba(168,219,184,.5);text-transform:uppercase;letter-spacing:1.5px;margin-top:.3rem;display:block;}
+.cards-grid{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;}
+.ic-icon{font-size:2rem;margin-bottom:1rem;display:block;}
+.ic-title{font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--white);font-weight:700;margin-bottom:.6rem;}
+.ic-text{font-size:.82rem;color:rgba(168,219,184,.55);line-height:1.7;}
+.cta-band{position:relative;z-index:10;padding:90px 5%;text-align:center;background:linear-gradient(135deg,rgba(19,51,32,.8),rgba(30,92,52,.5));border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.cta-band h2{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,4vw,3rem);color:var(--white);font-weight:700;margin-bottom:.8rem;}
+.cta-band h2 em{font-style:italic;color:var(--mint);}
+.cta-band p{color:rgba(168,219,184,.6);margin-bottom:2rem;font-size:.9rem;}
+.cta-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;}
+@media(max-width:900px){.historia-grid,.cards-grid{grid-template-columns:1fr;}.historia-visual{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="orb-layer"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div><div class="orb orb4"></div></div>
+<div class="leaf-layer" id="leaf-layer"></div>
+<div class="grid-overlay"></div>
+<div id="toasts"></div>
+
+<nav class="navbar" id="navbar">
+  <a class="nav-logo" href="../index.html"><div class="logo-mark">🌿</div><span class="logo-text">Verdes<em>por</em>Acción</span></a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="../index.html">Inicio</a></li>
+    <li><a href="quienes-somos.html" class="active">Quiénes Somos</a></li>
+    <li><a href="mision-vision.html">Misión &amp; Visión</a></li>
+    <li><a href="parques.html">Parques</a></li>
+    <li><a href="contenido.html">Contenido</a></li>
+    <li><a href="contacto.html">Contacto</a></li>
+  </ul>
+  <button class="nav-toggle" onclick="toggleNav()">☰</button>
+</nav>
+
+<section class="page-hero">
+  <div class="hero-eyebrow"><div class="dot"></div>👥 Conoce el equipo</div>
+  <h1>Quiénes <em>Somos</em></h1>
+  <p>Un equipo universitario comprometido con el medio ambiente y la participación ciudadana activa en la gestión de áreas verdes de Bogotá.</p>
+  <div class="page-scroll-hint">
+    <div class="scroll-wheel"></div>
+    <span>Explorar</span>
+  </div>
+</section>
+
+<section class="page-section">
+  <div class="historia-grid">
+    <div class="historia-text reveal">
+      <div class="section-label">Nuestra historia</div>
+      <h2 class="section-title">Un puente entre<br/><em>ciudadanos y parques</em></h2>
+      <p>Verdes por Acción nació como un proyecto universitario con el propósito de conectar a los ciudadanos con sus parques y áreas verdes, facilitando la comunicación entre la comunidad y las organizaciones responsables del cuidado ambiental.</p>
+      <p>Identificamos que muchos parques carecen de atención oportuna ante daños, acumulación de basura o abandono. Nuestra plataforma crea el puente necesario entre quien ve el problema y quien tiene la capacidad de resolverlo.</p>
+      <p>Nos basamos en el marco legal colombiano — Ley 1581/2012 sobre protección de datos y Ley 720/2001 sobre voluntariado — para garantizar un sistema justo, seguro y transparente para todos.</p>
+      <a href="mision-vision.html" class="btn-ghost" style="margin-top:1.2rem;display:inline-block;">Ver Misión &amp; Visión →</a>
+    </div>
+    <div class="historia-visual reveal reveal-d2">
+      <div class="hv-card"><span class="hv-num">120+</span><span class="hv-lbl">Parques monitoreados</span></div>
+      <div class="hv-card"><span class="hv-num">5K+</span><span class="hv-lbl">Voluntarios activos</span></div>
+      <div class="hv-card"><span class="hv-num">20</span><span class="hv-lbl">Localidades cubiertas</span></div>
+      <div class="hv-card"><span class="hv-num">2025</span><span class="hv-lbl">Año de fundación</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section class="page-section">
+  <div class="section-center reveal">
+    <div class="section-label center">Nuestros pilares</div>
+    <h2 class="section-title">Lo que nos <em>define</em></h2>
+  </div>
+  <div class="cards-grid">
+    <div class="g-card reveal reveal-d1"><span class="ic-icon">🌍</span><div class="ic-title">Impacto Ambiental</div><p class="ic-text">Facilitamos la vigilancia comunitaria de más de 120 parques en 20 localidades, generando reportes que derivan en acciones concretas de mejora.</p></div>
+    <div class="g-card reveal reveal-d2"><span class="ic-icon">🤝</span><div class="ic-title">Comunidad Activa</div><p class="ic-text">Más de 5.000 voluntarios se han registrado en nuestra plataforma, participando en jornadas de limpieza, siembra y restauración ambiental.</p></div>
+    <div class="g-card reveal reveal-d3"><span class="ic-icon">🏛️</span><div class="ic-title">Alianzas Estratégicas</div><p class="ic-text">Trabajamos con convenios de organizaciones ambientales, juntas de acción comunal y entidades distritales para maximizar el impacto.</p></div>
+    <div class="g-card reveal reveal-d1"><span class="ic-icon">⚖️</span><div class="ic-title">Marco Legal</div><p class="ic-text">Cumplimos rigurosamente con la Ley 1581/2012, Ley 720/2001 y demás normativas vigentes en Colombia sobre datos y voluntariado.</p></div>
+    <div class="g-card reveal reveal-d2"><span class="ic-icon">📱</span><div class="ic-title">Tecnología Accesible</div><p class="ic-text">Nuestra plataforma está diseñada para ser intuitiva y accesible desde cualquier dispositivo, facilitando la participación ciudadana.</p></div>
+    <div class="g-card reveal reveal-d3"><span class="ic-icon">🎓</span><div class="ic-title">Proyecto Universitario</div><p class="ic-text">Desarrollado por estudiantes comprometidos con la innovación social y tecnológica al servicio del medio ambiente y la comunidad.</p></div>
+  </div>
+</section>
+
+<section class="cta-band">
+  <h2 class="reveal">¿Listo para <em>unirte?</em></h2>
+  <p class="reveal">Regístrate y comienza a hacer la diferencia en tu localidad hoy mismo.</p>
+  <div class="cta-btns reveal">
+    <a href="../index.html#register-section" class="btn-primary">Registrarme ahora →</a>
+    <a href="parques.html" class="btn-ghost">Explorar parques</a>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo"><div class="logo-mark">🌿</div><span>Verdes<em>por</em>Acción</span></div>
+    <div class="footer-links"><a href="../index.html">Inicio</a><a href="quienes-somos.html">Quiénes Somos</a><a href="mision-vision.html">Misión &amp; Visión</a><a href="contenido.html">Contenido</a><a href="contacto.html">Contacto</a></div>
+    <div class="footer-legal">© 2025 Verdes por Acción · Proyecto Universitario</div>
+  </div>
+</footer>
+<script src="../assets/js/pages-bg.js"></script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Misión &amp; Visión — Verdes por Acción</title>
+<link rel="stylesheet" href="../assets/css/pages.css"/>
+<style>
+.mv-duo{max-width:1050px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;}
+.mv-card{border-radius:24px;padding:3rem 2.6rem;position:relative;overflow:hidden;transition:transform .3s;}
+.mv-card:hover{transform:translateY(-6px);}
+.mv-card.mision{background:linear-gradient(145deg,rgba(30,92,52,.55),rgba(19,51,32,.7));border:1px solid rgba(109,191,138,.25);}
+.mv-card.vision{background:linear-gradient(145deg,rgba(10,31,16,.5),rgba(19,51,32,.35));border:1px solid rgba(109,191,138,.15);}
+.mv-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--mint),transparent);}
+.mv-card.vision::before{background:linear-gradient(90deg,transparent,var(--gold2),transparent);}
+.mv-icon{font-size:2.8rem;margin-bottom:1.2rem;display:block;}
+.mv-card h2{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--white);font-weight:700;margin-bottom:1rem;}
+.mv-card p{color:rgba(168,219,184,.7);line-height:1.85;font-size:.9rem;}
+
+.values-section{background:rgba(5,15,8,.4);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.values-grid{max-width:1050px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:1.1rem;}
+.val-card{background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:1.6rem 1.4rem;border-left:3px solid var(--sage);transition:all .25s;}
+.val-card:hover{border-left-color:var(--mint);background:rgba(58,140,87,.07);transform:translateX(4px);}
+.val-card h4{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--white);font-weight:700;margin-bottom:.5rem;}
+.val-card p{font-size:.8rem;color:rgba(168,219,184,.55);line-height:1.65;}
+
+.objetivos-list{max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:1rem;}
+.obj-item{display:flex;align-items:flex-start;gap:1rem;padding:1.2rem 1.4rem;background:var(--glass);border:1px solid var(--border);border-radius:14px;transition:all .22s;}
+.obj-item:hover{border-color:var(--border2);background:rgba(58,140,87,.06);}
+.obj-num{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:var(--sage);line-height:1;flex-shrink:0;width:42px;}
+.obj-text h4{font-size:.92rem;font-weight:600;color:var(--white);margin-bottom:.3rem;}
+.obj-text p{font-size:.8rem;color:rgba(168,219,184,.55);line-height:1.6;}
+
+@media(max-width:900px){.mv-duo,.values-grid{grid-template-columns:1fr;}.values-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:600px){.values-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="orb-layer"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div><div class="orb orb4"></div></div>
+<div class="leaf-layer" id="leaf-layer"></div>
+<div class="grid-overlay"></div>
+<div id="toasts"></div>
+
+<nav class="navbar" id="navbar">
+  <a class="nav-logo" href="../index.html"><div class="logo-mark">🌿</div><span class="logo-text">Verdes<em>por</em>Acción</span></a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="../index.html">Inicio</a></li>
+    <li><a href="quienes-somos.html">Quiénes Somos</a></li>
+    <li><a href="mision-vision.html" class="active">Misión &amp; Visión</a></li>
+    <li><a href="parques.html">Parques</a></li>
+    <li><a href="contenido.html">Contenido</a></li>
+    <li><a href="contacto.html">Contacto</a></li>
+  </ul>
+  <button class="nav-toggle" onclick="toggleNav()">☰</button>
+</nav>
+
+<section class="page-hero">
+  <div class="hero-eyebrow"><div class="dot"></div>🎯 Nuestros principios</div>
+  <h1>Misión &amp; <em>Visión</em></h1>
+  <p>Los valores que guían cada decisión de nuestra plataforma y que impulsan nuestra labor ambiental en Colombia.</p>
+</section>
+
+<!-- MISIÓN / VISIÓN -->
+<section class="page-section">
+  <div class="mv-duo">
+    <div class="mv-card mision reveal">
+      <span class="mv-icon">🌱</span>
+      <h2>Misión</h2>
+      <p>Facilitar la gestión participativa de áreas verdes urbanas mediante una plataforma digital que conecte a ciudadanos, organizaciones ambientales y autoridades, fomentando el reporte oportuno de problemas, la coordinación de voluntariados y el seguimiento transparente del estado de los parques en cada localidad.</p>
+    </div>
+    <div class="mv-card vision reveal reveal-d2">
+      <span class="mv-icon">🔭</span>
+      <h2>Visión</h2>
+      <p>Para 2030, ser la plataforma de referencia en gestión ambiental participativa en Colombia, con presencia en todas las localidades del país, empoderando a las comunidades para ser guardianas activas de sus espacios verdes y contribuyendo a ciudades más sostenibles, inclusivas y resilientes al cambio climático.</p>
+    </div>
+  </div>
+  <div class="page-scroll-hint">
+    <div class="scroll-wheel"></div>
+    <span>Explorar</span>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- VALORES -->
+<section class="page-section values-section">
+  <div class="section-center reveal">
+    <div class="section-label center">Principios</div>
+    <h2 class="section-title">Nuestros <em>Valores</em></h2>
+    <p class="section-sub" style="max-width:480px;margin:0 auto;">Los principios que guían cada acción de Verdes por Acción</p>
+  </div>
+  <div class="values-grid" style="margin-top:3rem;">
+    <div class="val-card reveal reveal-d1"><h4>🌿 Sostenibilidad</h4><p>Promovemos prácticas que protegen el medio ambiente para las generaciones presentes y futuras de Colombia.</p></div>
+    <div class="val-card reveal reveal-d2"><h4>🤝 Colaboración</h4><p>Creemos que el trabajo conjunto entre ciudadanos, organizaciones y entidades genera mayor impacto ambiental.</p></div>
+    <div class="val-card reveal reveal-d3"><h4>📣 Transparencia</h4><p>Toda la información sobre reportes y voluntariados es pública y accesible para la comunidad sin restricciones.</p></div>
+    <div class="val-card reveal reveal-d1"><h4>⚖️ Legalidad</h4><p>Operamos bajo el estricto cumplimiento de las leyes colombianas vigentes en materia ambiental y de datos.</p></div>
+    <div class="val-card reveal reveal-d2"><h4>🏘️ Comunidad</h4><p>Ponemos las necesidades de los ciudadanos y sus localidades en el centro de cada decisión que tomamos.</p></div>
+    <div class="val-card reveal reveal-d3"><h4>💡 Innovación</h4><p>Usamos la tecnología para simplificar la participación ambiental y hacerla accesible a todos los ciudadanos.</p></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- OBJETIVOS -->
+<section class="page-section">
+  <div class="section-center reveal">
+    <div class="section-label center">Metas</div>
+    <h2 class="section-title">Objetivos <em>estratégicos</em></h2>
+  </div>
+  <div class="objetivos-list" style="margin-top:2.5rem;">
+    <div class="obj-item reveal"><div class="obj-num">01</div><div class="obj-text"><h4>Cobertura nacional</h4><p>Expandir la plataforma a todas las ciudades principales de Colombia antes de 2027, con soporte para múltiples idiomas regionales.</p></div></div>
+    <div class="obj-item reveal"><div class="obj-num">02</div><div class="obj-text"><h4>100.000 voluntarios activos</h4><p>Alcanzar una red de cien mil voluntarios registrados que participen regularmente en actividades de conservación ambiental.</p></div></div>
+    <div class="obj-item reveal"><div class="obj-num">03</div><div class="obj-text"><h4>Alianzas institucionales</h4><p>Formalizar convenios con la Secretaría Distrital de Ambiente y al menos 50 organizaciones ambientales a nivel nacional.</p></div></div>
+    <div class="obj-item reveal"><div class="obj-num">04</div><div class="obj-text"><h4>Tiempo de respuesta</h4><p>Reducir el tiempo promedio de atención a reportes de parques a menos de 72 horas gracias a la coordinación directa con convenios.</p></div></div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo"><div class="logo-mark">🌿</div><span>Verdes<em>por</em>Acción</span></div>
+    <div class="footer-links"><a href="../index.html">Inicio</a><a href="quienes-somos.html">Quiénes Somos</a><a href="mision-vision.html">Misión &amp; Visión</a><a href="contenido.html">Contenido</a><a href="contacto.html">Contacto</a></div>
+    <div class="footer-legal">© 2025 Verdes por Acción · Proyecto Universitario</div>
+  </div>
+</footer>
+<script src="../assets/js/pages-bg.js"></script>
+</body>
+</html>

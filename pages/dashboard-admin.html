@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Verdes por Acción · Admin</title>
+<link rel="stylesheet" href="../assets/css/global.css">
+<style>
+.kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:2rem; }
+.kpi-card { background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:14px; padding:1.1rem; text-align:center; transition:all .2s; }
+.kpi-card:hover { border-color:rgba(122,184,147,.35); transform:translateY(-2px); }
+.kpi-val  { font-family:'Playfair Display',serif; font-size:2rem; color:var(--white); line-height:1; }
+.kpi-lbl  { font-size:.7rem; color:var(--muted); margin-top:.3rem; }
+.kpi-sub  { font-size:.68rem; color:var(--sage); margin-top:.2rem; }
+.kpi-pend { color:#f1948a; }
+
+.user-row { display:flex; align-items:center; gap:.6rem; }
+.user-row .ava { width:28px; height:28px; font-size:.62rem; flex-shrink:0; }
+.user-nm  { font-weight:500; font-size:.83rem; color:var(--white); }
+.user-em  { font-size:.7rem; color:var(--muted); }
+
+.chart-bars { display:flex; align-items:flex-end; gap:.4rem; height:80px; margin-top:.5rem; }
+.chart-bar  { flex:1; background:linear-gradient(180deg,var(--sage),var(--leaf)); border-radius:3px 3px 0 0; transition:height 1s cubic-bezier(.22,1,.36,1); min-height:4px; }
+.chart-lbl  { display:flex; gap:.4rem; margin-top:.3rem; }
+.chart-lbl span { flex:1; text-align:center; font-size:.58rem; color:var(--muted); }
+
+.admin-card { background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:12px; padding:1rem; margin-bottom:.75rem; display:flex; align-items:center; gap:.8rem; }
+.empty-state { text-align:center; padding:2.5rem 1rem; color:var(--muted); font-size:.88rem; }
+
+@media(max-width:900px){ .kpi-grid{grid-template-columns:1fr 1fr;} }
+@media(max-width:480px){ .kpi-grid{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div id="toasts"></div>
+
+<!-- Confirm -->
+<div class="overlay hide" id="confirm-overlay">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-hdr"><h3>⚠️ Confirmar acción</h3><button class="modal-close" onclick="M.close('confirm-overlay')">✕</button></div>
+    <p id="c-msg" style="color:rgba(255,255,255,.8);margin-bottom:1.4rem;font-size:.9rem;line-height:1.5"></p>
+    <div style="display:flex;gap:.7rem">
+      <button class="btn btn-danger btn-full" id="c-yes">Sí, continuar</button>
+      <button class="btn btn-outline btn-full" onclick="M.close('confirm-overlay')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Ver Detalle Usuario -->
+<div class="overlay hide" id="m-user-detail">
+  <div class="modal">
+    <div class="modal-hdr"><h3>👤 Detalle de Usuario</h3><button class="modal-close" onclick="M.close('m-user-detail')">✕</button></div>
+    <div id="user-detail-body"></div>
+    <div style="display:flex;gap:.6rem;margin-top:1.2rem" id="user-detail-actions"></div>
+  </div>
+</div>
+
+<!-- Modal Ver Detalle Empresa -->
+<div class="overlay hide" id="m-emp-detail">
+  <div class="modal">
+    <div class="modal-hdr"><h3>🏢 Detalle de Empresa</h3><button class="modal-close" onclick="M.close('m-emp-detail')">✕</button></div>
+    <div id="emp-detail-body"></div>
+    <div style="display:flex;gap:.6rem;margin-top:1.2rem" id="emp-detail-actions"></div>
+  </div>
+</div>
+
+<!-- Modal Nuevo Admin -->
+<div class="overlay hide" id="m-nuevo-admin">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-hdr"><h3>🛡️ Nuevo Administrador</h3><button class="modal-close" onclick="M.close('m-nuevo-admin')">✕</button></div>
+    <form id="f-nuevo-admin">
+      <div class="field"><label>Nombre completo *</label><input name="nombre" placeholder="Nombre del admin"></div>
+      <div class="field"><label>Usuario (login) *</label><input name="username" placeholder="username único"></div>
+      <div class="field"><label>Contraseña *</label><input name="password" type="password" placeholder="Mínimo 6 caracteres"></div>
+      <button type="submit" class="btn btn-primary btn-full">➕ Crear administrador</button>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Nuevo Reto -->
+<div class="overlay hide" id="m-nuevo-reto">
+  <div class="modal">
+    <div class="modal-hdr"><h3>🎯 Nuevo Reto Ambiental</h3><button class="modal-close" onclick="M.close('m-nuevo-reto')">✕</button></div>
+    <form id="f-nuevo-reto">
+      <div class="field"><label>Título del reto *</label><input name="titulo" placeholder="Nombre del reto"></div>
+      <div class="field"><label>Descripción *</label><textarea name="desc" placeholder="¿En qué consiste este reto?"></textarea></div>
+      <div class="form-row">
+        <div class="field"><label>Puntos</label><input name="puntos" type="number" min="0" placeholder="300"></div>
+        <div class="field"><label>Duración</label><input name="dur" placeholder="7 días"></div>
+      </div>
+      <div class="field"><label>Categoría</label>
+        <select name="cat"><option>Consumo</option><option>Naturaleza</option><option>Movilidad</option><option>Residuos</option><option>Energía</option><option>Agua</option><option>Comunidad</option></select>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">✅ Crear reto</button>
+    </form>
+  </div>
+</div>
+
+<button class="mob-tog" data-sb="sb-a" data-sb-ov="sb-a-ov">☰</button>
+<div class="sb-overlay" id="sb-a-ov"></div>
+
+<div class="layout">
+  <aside class="sidebar" id="sb-a">
+    <div class="sb-logo">
+      <span class="ico">🌿</span>
+      <div class="nm">Verdes por Acción <small>Administración</small></div>
+    </div>
+    <div class="sb-sec">
+      <div class="sb-sec-title">Sistema</div>
+      <div class="nav-item on" data-g="a" data-t="a-overview"><span class="ni">📈</span> Overview</div>
+      <div class="nav-item"    data-g="a" data-t="a-usuarios"><span class="ni">👤</span> Usuarios</div>
+      <div class="nav-item"    data-g="a" data-t="a-empresas"><span class="ni">🏢</span> Empresas</div>
+    </div>
+    <div class="sb-sec">
+      <div class="sb-sec-title">Contenido</div>
+      <div class="nav-item" data-g="a" data-t="a-retos"><span class="ni">🎯</span> Retos</div>
+      <div class="nav-item" data-g="a" data-t="a-admins"><span class="ni">🛡️</span> Administradores</div>
+    </div>
+    <div class="sb-sec">
+      <div class="sb-sec-title">Reportes</div>
+      <div class="nav-item" data-g="a" data-t="a-log"><span class="ni">📋</span> Log del sistema</div>
+      <div class="nav-item" data-g="a" data-t="a-stats"><span class="ni">📊</span> Estadísticas</div>
+    </div>
+    <div class="sb-foot">
+      <div class="user-chip">
+        <div class="ava gold-av" id="adm-av">AD</div>
+        <div>
+          <div class="chip-name" id="adm-cn">Admin</div>
+          <div class="chip-role" id="adm-role">Superadministrador</div>
+        </div>
+        <button class="logout-btn" onclick="logout()">⏻</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="alert-bar">🛡️ Modo Administrador — Todas las acciones quedan registradas en el log del sistema</div>
+
+    <!-- OVERVIEW -->
+    <div class="tab-panel on" id="tp-a-overview">
+      <div class="pg-hdr"><h1>Panel de Control 🛡️</h1><p>Visión global del sistema en tiempo real</p></div>
+      <div class="kpi-grid">
+        <div class="kpi-card"><div class="kpi-val" id="k-users">0</div><div class="kpi-lbl">Usuarios totales</div><div class="kpi-sub">Activos: <span id="k-uact">0</span></div></div>
+        <div class="kpi-card"><div class="kpi-val kpi-pend" id="k-upend">0</div><div class="kpi-lbl">Usuarios pendientes</div><div class="kpi-sub">Requieren aprobación</div></div>
+        <div class="kpi-card"><div class="kpi-val" id="k-emps">0</div><div class="kpi-lbl">Empresas totales</div><div class="kpi-sub">Activas: <span id="k-eact">0</span></div></div>
+        <div class="kpi-card"><div class="kpi-val kpi-pend" id="k-epend">0</div><div class="kpi-lbl">Empresas pendientes</div><div class="kpi-sub">Requieren aprobación</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">📋 Actividad reciente</div>
+          <ul class="act-list" id="ov-log"></ul>
+        </div>
+        <div>
+          <div class="card mb2">
+            <div class="card-title">📊 Resumen del sistema</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;text-align:center">
+              <div style="background:rgba(255,255,255,.03);border-radius:10px;padding:.8rem"><div style="font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--white)" id="k-retos">0</div><div style="font-size:.7rem;color:var(--muted)">Retos activos</div></div>
+              <div style="background:rgba(255,255,255,.03);border-radius:10px;padding:.8rem"><div style="font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--white)" id="k-logs">0</div><div style="font-size:.7rem;color:var(--muted)">Eventos log</div></div>
+              <div style="background:rgba(255,255,255,.03);border-radius:10px;padding:.8rem"><div style="font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--white)" id="k-admins">0</div><div style="font-size:.7rem;color:var(--muted)">Administradores</div></div>
+              <div style="background:rgba(255,255,255,.03);border-radius:10px;padding:.8rem"><div style="font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--sage)">98%</div><div style="font-size:.7rem;color:var(--muted)">Uptime sistema</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">🏆 Acciones rápidas</div>
+            <div style="display:flex;flex-direction:column;gap:.5rem">
+              <button class="btn btn-success" onclick="goTab('a-usuarios')">✅ Aprobar usuarios pendientes</button>
+              <button class="btn btn-warn"    onclick="goTab('a-empresas')">🏢 Aprobar empresas pendientes</button>
+              <button class="btn btn-outline" onclick="M.open('m-nuevo-reto')">🎯 Crear nuevo reto</button>
+              <button class="btn btn-outline" onclick="M.open('m-nuevo-admin')">🛡️ Agregar administrador</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- USUARIOS -->
+    <div class="tab-panel" id="tp-a-usuarios">
+      <div class="pg-hdr"><h1>👤 Gestión de Usuarios</h1><p>Aprueba, suspende, reactiva o elimina cuentas de usuario</p></div>
+      <div class="search-row">
+        <input id="search-u" placeholder="🔍 Buscar por nombre, correo o ciudad..." oninput="renderUsers()">
+        <select id="filter-u-status" onchange="renderUsers()" style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:10px;padding:.65rem .9rem;color:var(--white);font-family:'DM Sans',sans-serif;font-size:.86rem;outline:none;cursor:pointer">
+          <option value="">Todos los estados</option>
+          <option value="pendiente">Pendientes</option>
+          <option value="activo">Activos</option>
+          <option value="suspendido">Suspendidos</option>
+        </select>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Usuario</th><th>Ciudad</th><th>Registro</th><th>Puntos</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody id="tbl-users"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- EMPRESAS -->
+    <div class="tab-panel" id="tp-a-empresas">
+      <div class="pg-hdr"><h1>🏢 Gestión de Empresas</h1><p>Autoriza y administra cuentas corporativas</p></div>
+      <div class="search-row">
+        <input id="search-e" placeholder="🔍 Buscar por nombre, NIT o correo..." oninput="renderEmps()">
+        <select id="filter-e-status" onchange="renderEmps()" style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:10px;padding:.65rem .9rem;color:var(--white);font-family:'DM Sans',sans-serif;font-size:.86rem;outline:none;cursor:pointer">
+          <option value="">Todos los estados</option>
+          <option value="pendiente">Pendientes</option>
+          <option value="activo">Activos</option>
+          <option value="suspendido">Suspendidos</option>
+        </select>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Empresa</th><th>Sector</th><th>Ciudad</th><th>Registro</th><th>ESG</th><th>Estado</th><th>Acciones</th></tr></thead>
+          <tbody id="tbl-emps"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- RETOS -->
+    <div class="tab-panel" id="tp-a-retos">
+      <div class="pg-hdr"><h1>🎯 Gestión de Retos</h1><p>Crea y administra los retos ambientales de la plataforma</p></div>
+      <div class="card">
+        <div class="card-title">Retos disponibles <button class="btn btn-sm btn-primary" onclick="M.open('m-nuevo-reto')">+ Nuevo reto</button></div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Reto</th><th>Categoría</th><th>Duración</th><th>Puntos</th><th>Acciones</th></tr></thead>
+          <tbody id="tbl-retos"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ADMINS -->
+    <div class="tab-panel" id="tp-a-admins">
+      <div class="pg-hdr"><h1>🛡️ Administradores</h1><p>Gestiona los accesos al panel de administración</p></div>
+      <div class="card">
+        <div class="card-title">Cuentas de administrador <button class="btn btn-sm btn-primary" onclick="M.open('m-nuevo-admin')">+ Nuevo admin</button></div>
+        <div class="hint-box mb2">⚠️ Solo el superadmin puede crear o eliminar administradores. Los admins tienen acceso completo al sistema.</div>
+        <div id="admins-list"></div>
+      </div>
+    </div>
+
+    <!-- LOG -->
+    <div class="tab-panel" id="tp-a-log">
+      <div class="pg-hdr"><h1>📋 Log del Sistema</h1><p>Historial completo de actividad en la plataforma</p></div>
+      <div class="card">
+        <div class="search-row" style="margin-bottom:1rem">
+          <input id="search-log" placeholder="🔍 Buscar en el log..." oninput="renderLog()">
+          <select id="filter-log-tipo" onchange="renderLog()" style="background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:10px;padding:.65rem .9rem;color:var(--white);font-family:'DM Sans',sans-serif;font-size:.86rem;outline:none;cursor:pointer">
+            <option value="">Todos los tipos</option>
+            <option value="admin">Admin</option>
+            <option value="usuario">Usuario</option>
+            <option value="empresa">Empresa</option>
+            <option value="sistema">Sistema</option>
+          </select>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Tiempo</th><th>Tipo</th><th>Evento</th></tr></thead>
+          <tbody id="tbl-log"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ESTADÍSTICAS -->
+    <div class="tab-panel" id="tp-a-stats">
+      <div class="pg-hdr"><h1>📊 Estadísticas</h1><p>Métricas globales de la plataforma</p></div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-val" id="st-users">0</div><div class="stat-lbl">Usuarios registrados</div></div>
+        <div class="stat-card"><div class="stat-icon">🏢</div><div class="stat-val" id="st-emps">0</div><div class="stat-lbl">Empresas registradas</div></div>
+        <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-val" id="st-retos">0</div><div class="stat-lbl">Retos activos</div></div>
+        <div class="stat-card"><div class="stat-icon">📋</div><div class="stat-val" id="st-logs">0</div><div class="stat-lbl">Eventos registrados</div></div>
+      </div>
+      <div class="grid-2-equal">
+        <div class="card">
+          <div class="card-title">📈 Crecimiento de usuarios</div>
+          <div class="chart-bars" id="chart-users">
+            <div class="chart-bar" style="height:30%"></div><div class="chart-bar" style="height:45%"></div>
+            <div class="chart-bar" style="height:55%"></div><div class="chart-bar" style="height:70%"></div>
+            <div class="chart-bar" style="height:62%"></div><div class="chart-bar" style="height:80%"></div>
+            <div class="chart-bar" style="height:95%"></div>
+          </div>
+          <div class="chart-lbl"><span>Sep</span><span>Oct</span><span>Nov</span><span>Dic</span><span>Ene</span><span>Feb</span><span>Mar</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title">🌿 Estado de registros</div>
+          <div style="display:flex;flex-direction:column;gap:.8rem;margin-top:.5rem">
+            <div class="prog-item" style="margin:0"><div class="prog-lbl"><span>Usuarios activos</span><span id="st-u-pct">0%</span></div><div class="prog-bar"><div class="prog-fill" id="st-u-bar" data-w="0%" style="width:0"></div></div></div>
+            <div class="prog-item" style="margin:0"><div class="prog-lbl"><span>Empresas activas</span><span id="st-e-pct">0%</span></div><div class="prog-bar"><div class="prog-fill" id="st-e-bar" data-w="0%" style="width:0"></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="../assets/js/core.js"></script>
+<script>
+DB.init(); initMobile(); initNav('a');
+
+const sess=DB.sess();
+if(!sess||(sess.role!=='superadmin'&&sess.role!=='admin')){ window.location='../index.html'; }
+
+document.getElementById('adm-av').textContent = initials(sess.nombre);
+document.getElementById('adm-cn').textContent = sess.nombre;
+document.getElementById('adm-role').textContent = sess.role==='superadmin'?'Superadministrador':'Administrador';
+
+/* ── KPIs ── */
+function updateKPIs(){
+  const s=DB.stats();
+  ['k-users','k-uact','k-upend','k-emps','k-eact','k-epend','k-retos','k-logs'].forEach(id=>{
+    const el=document.getElementById(id); if(!el)return;
+    const map={'k-users':s.users,'k-uact':s.usersActive,'k-upend':s.usersPending,'k-emps':s.emps,'k-eact':s.empsActive,'k-epend':s.empsPending,'k-retos':s.retos,'k-logs':s.logs};
+    el.textContent=map[id]??0;
+  });
+  document.getElementById('k-admins').textContent=DB.admins().length;
+  ['st-users','st-emps','st-retos','st-logs'].forEach(id=>{
+    const el=document.getElementById(id); if(!el)return;
+    const map={'st-users':s.users,'st-emps':s.emps,'st-retos':s.retos,'st-logs':s.logs};
+    el.textContent=map[id]??0;
+  });
+  // stats pct
+  if(s.users>0){
+    const upct=Math.round(s.usersActive/s.users*100);
+    const el=document.getElementById('st-u-pct'); if(el)el.textContent=upct+'%';
+    const bar=document.getElementById('st-u-bar'); if(bar)bar.dataset.w=upct+'%';
+  }
+  if(s.emps>0){
+    const epct=Math.round(s.empsActive/s.emps*100);
+    const el=document.getElementById('st-e-pct'); if(el)el.textContent=epct+'%';
+    const bar=document.getElementById('st-e-bar'); if(bar)bar.dataset.w=epct+'%';
+  }
+  animProg();
+}
+
+/* ── OVERVIEW LOG ── */
+function renderOvLog(){
+  const c=document.getElementById('ov-log'); if(!c)return;
+  const logs=DB.getLogs().slice(0,8);
+  c.innerHTML=logs.map(l=>`<li class="act-item"><div class="act-dot ${l.tipo==='admin'?'gold':l.tipo==='empresa'?'':l.tipo==='sistema'?'red':''}"></div><div><div class="act-text">${esc(l.msg)}</div><div class="act-time">${ago(l.t)} · <span class="badge ${logBadge(l.tipo)}">${l.tipo}</span></div></div></li>`).join('');
+}
+function logBadge(t){ return t==='admin'?'b-yellow':t==='empresa'?'b-blue':t==='usuario'?'b-green':'b-purple'; }
+
+/* ── USERS TABLE ── */
+function renderUsers(){
+  const q=(document.getElementById('search-u')?.value||'').toLowerCase();
+  const st=document.getElementById('filter-u-status')?.value||'';
+  const tbody=document.getElementById('tbl-users'); if(!tbody)return;
+  let list=DB.users();
+  if(q) list=list.filter(u=>(u.nombre+u.email+(u.ciudad||'')).toLowerCase().includes(q));
+  if(st) list=list.filter(u=>u.status===st);
+  if(!list.length){ tbody.innerHTML='<tr><td colspan="6" class="empty-state">Sin resultados</td></tr>'; return; }
+  tbody.innerHTML=list.map(u=>`<tr>
+    <td><div class="user-row"><div class="ava">${initials(u.nombre)}</div><div><div class="user-nm">${esc(u.nombre)}</div><div class="user-em">${esc(u.email)}</div></div></div></td>
+    <td>${esc(u.ciudad||'-')}</td>
+    <td>${fmtDate(u.createdAt)}</td>
+    <td><strong style="color:var(--sage)">${(u.puntos||0).toLocaleString()}</strong></td>
+    <td><span class="badge ${statusBadge(u.status)}">${u.status}</span></td>
+    <td><div class="td-acts">
+      <button class="btn btn-sm btn-outline" onclick="viewUser('${u.id}')">👁 Ver</button>
+      ${u.status==='pendiente'  ?`<button class="btn btn-sm btn-success" onclick="approveUser('${u.id}')">✓ Aprobar</button>`:''}
+      ${u.status==='activo'     ?`<button class="btn btn-sm btn-warn"    onclick="suspendUser('${u.id}')">⏸</button>`:''}
+      ${u.status==='suspendido' ?`<button class="btn btn-sm btn-success" onclick="activateUser('${u.id}')">▶</button>`:''}
+      <button class="btn btn-sm btn-danger" onclick="delUser('${u.id}','${esc(u.nombre)}')">🗑</button>
+    </div></td>
+  </tr>`).join('');
+}
+
+window.viewUser=function(id){
+  const u=DB.users().find(x=>x.id===id); if(!u)return;
+  document.getElementById('user-detail-body').innerHTML=`
+    <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.2rem">
+      <div class="ava" style="width:50px;height:50px;font-size:1.1rem">${initials(u.nombre)}</div>
+      <div><div style="font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--white)">${esc(u.nombre)}</div><div style="font-size:.8rem;color:var(--muted)">${esc(u.email)}</div></div>
+      <span class="badge ${statusBadge(u.status)}" style="margin-left:auto">${u.status}</span>
+    </div>
+    <table><tbody>
+      <tr><td style="color:var(--muted);padding:.4rem .6rem;font-size:.8rem;width:120px">Ciudad</td><td style="font-size:.84rem">${esc(u.ciudad||'-')}</td></tr>
+      <tr><td style="color:var(--muted);padding:.4rem .6rem;font-size:.8rem">Teléfono</td><td style="font-size:.84rem">${esc(u.telefono||'-')}</td></tr>
+      <tr><td style="color:var(--muted);padding:.4rem .6rem;font-size:.8rem">Puntos</td><td style="font-size:.84rem;color:var(--sage);font-weight:600">${(u.puntos||0).toLocaleString()} pts</td></tr>
+      <tr><td style="color:var(--muted);padding:.4rem .6rem;font-size:.8rem">Acciones</td><td style="font-size:.84rem">${u.actividades||0}</td></tr>
+      <tr><td style="color:var(--muted);padding:.4rem .6rem;font-size:.8rem">Árboles</td><td style="font-size:.84rem">${u.arboles||0}</td></tr>
+      <tr><td style="color:var(--muted);padding:.4rem .6rem;font-size:.8rem">Reciclado</td><td style="font-size:.84rem">${u.residuos||0} kg</td></tr>
+      <tr><td style="color:var(--muted);padding:.4rem .6rem;font-size:.8rem">Registro</td><td style="font-size:.84rem">${fmtDate(u.createdAt)}</td></tr>
+    </tbody></table>`;
+  const acts=document.getElementById('user-detail-actions');
+  acts.innerHTML=`
+    ${u.status==='pendiente'  ?`<button class="btn btn-success btn-full" onclick="approveUser('${u.id}');M.close('m-user-detail')">✓ Aprobar cuenta</button>`:''}
+    ${u.status==='activo'     ?`<button class="btn btn-warn btn-full"    onclick="suspendUser('${u.id}');M.close('m-user-detail')">⏸ Suspender</button>`:''}
+    ${u.status==='suspendido' ?`<button class="btn btn-success btn-full" onclick="activateUser('${u.id}');M.close('m-user-detail')">▶ Reactivar</button>`:''}
+    <button class="btn btn-danger btn-full" onclick="delUser('${u.id}','${esc(u.nombre)}');M.close('m-user-detail')">🗑 Eliminar</button>`;
+  M.open('m-user-detail');
+};
+
+window.approveUser=function(id){
+  const u=DB.users().find(x=>x.id===id); DB.updUser(id,{status:'activo'});
+  DB.log('Usuario aprobado: '+u?.nombre,'admin'); T.ok('Usuario aprobado: '+u?.nombre);
+  renderUsers(); updateKPIs(); renderOvLog();
+};
+window.suspendUser=function(id){
+  const u=DB.users().find(x=>x.id===id);
+  M.confirm(`¿Suspender la cuenta de ${u?.nombre}?`,()=>{ DB.updUser(id,{status:'suspendido'}); DB.log('Usuario suspendido: '+u?.nombre,'admin'); T.warn('Usuario suspendido.'); renderUsers(); updateKPIs(); renderOvLog(); });
+};
+window.activateUser=function(id){
+  const u=DB.users().find(x=>x.id===id); DB.updUser(id,{status:'activo'});
+  DB.log('Usuario reactivado: '+u?.nombre,'admin'); T.ok('Usuario reactivado.'); renderUsers(); updateKPIs(); renderOvLog();
+};
+window.delUser=function(id,nombre){
+  M.confirm(`¿Eliminar permanentemente a "${nombre}"?`,()=>{ DB.delUser(id); DB.log('Usuario eliminado: '+nombre,'admin'); T.err('Usuario eliminado: '+nombre); renderUsers(); updateKPIs(); renderOvLog(); });
+};
+
+/* ── EMPRESAS TABLE ── */
+function renderEmps(){
+  const q=(document.getElementById('search-e')?.value||'').toLowerCase();
+  const st=document.getElementById('filter-e-status')?.value||'';
+  const tbody=document.getElementById('tbl-emps'); if(!tbody)return;
+  let list=DB.empresas();
+  if(q) list=list.filter(e=>(e.razonSocial+e.nit+e.email).toLowerCase().includes(q));
+  if(st) list=list.filter(e=>e.status===st);
+  if(!list.length){ tbody.innerHTML='<tr><td colspan="7" class="empty-state">Sin resultados</td></tr>'; return; }
+  tbody.innerHTML=list.map(e=>`<tr>
+    <td><div><div style="font-weight:500;font-size:.84rem">${esc(e.razonSocial)}</div><div style="font-size:.7rem;color:var(--muted)">${esc(e.nit)}</div></div></td>
+    <td>${esc(e.sector||'-')}</td>
+    <td>${esc(e.ciudad||'-')}</td>
+    <td>${fmtDate(e.createdAt)}</td>
+    <td><span class="badge b-green">${e.esgScore||0}/100</span></td>
+    <td><span class="badge ${statusBadge(e.status)}">${e.status}</span></td>
+    <td><div class="td-acts">
+      <button class="btn btn-sm btn-outline" onclick="viewEmp('${e.id}')">👁 Ver</button>
+      ${e.status==='pendiente'  ?`<button class="btn btn-sm btn-success" onclick="approveEmp('${e.id}')">✓ Aprobar</button>`:''}
+      ${e.status==='activo'     ?`<button class="btn btn-sm btn-warn"    onclick="suspendEmp('${e.id}')">⏸</button>`:''}
+      ${e.status==='suspendido' ?`<button class="btn btn-sm btn-success" onclick="activateEmp('${e.id}')">▶</button>`:''}
+      <button class="btn btn-sm btn-danger" onclick="delEmp('${e.id}','${esc(e.razonSocial)}')">🗑</button>
+    </div></td>
+  </tr>`).join('');
+}
+
+window.viewEmp=function(id){
+  const e=DB.empresas().find(x=>x.id===id); if(!e)return;
+  document.getElementById('emp-detail-body').innerHTML=`
+    <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1.2rem">
+      <div class="ava blue-av" style="width:50px;height:50px;font-size:1rem">${initials(e.razonSocial)}</div>
+      <div><div style="font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--white)">${esc(e.razonSocial)}</div><div style="font-size:.78rem;color:var(--muted)">${esc(e.nit)}</div></div>
+      <span class="badge ${statusBadge(e.status)}" style="margin-left:auto">${e.status}</span>
+    </div>
+    <table><tbody>
+      <tr><td style="color:var(--muted);padding:.4rem .6rem;font-size:.8rem;width:130px">Correo</td><td style="font-size:.84rem">${esc(e.email)}</td></tr>
+      <tr><td style="color:var(--muted);padding:.4rem .6rem;font-size:.8rem">Sector</td><td style="font-size:.84rem">${esc(e.sector||'-')}</td></tr>
+      <tr><td style="color:var(--muted);padding:.4rem .6rem;font-size:.8rem">Ciudad</td><td style="font-size:.84rem">${esc(e.ciudad||'-')}</td></tr>
+      <tr><td style="color:var(--muted);padding:.4rem .6rem;font-size:.8rem">Teléfono</td><td style="font-size:.84rem">${esc(e.telefono||'-')}</td></tr>
+      <tr><td style="color:var(--muted);padding:.4rem .6rem;font-size:.8rem">Website</td><td style="font-size:.84rem">${esc(e.website||'-')}</td></tr>
+      <tr><td style="color:var(--muted);padding:.4rem .6rem;font-size:.8rem">ESG Score</td><td style="font-size:.84rem;color:var(--sage);font-weight:600">${e.esgScore||0}/100</td></tr>
+      <tr><td style="color:var(--muted);padding:.4rem .6rem;font-size:.8rem">Proyectos</td><td style="font-size:.84rem">${(e.proyectos||[]).length}</td></tr>
+      <tr><td style="color:var(--muted);padding:.4rem .6rem;font-size:.8rem">Registro</td><td style="font-size:.84rem">${fmtDate(e.createdAt)}</td></tr>
+    </tbody></table>`;
+  const acts=document.getElementById('emp-detail-actions');
+  acts.innerHTML=`
+    ${e.status==='pendiente'  ?`<button class="btn btn-success btn-full" onclick="approveEmp('${e.id}');M.close('m-emp-detail')">✓ Aprobar empresa</button>`:''}
+    ${e.status==='activo'     ?`<button class="btn btn-warn btn-full"    onclick="suspendEmp('${e.id}');M.close('m-emp-detail')">⏸ Suspender</button>`:''}
+    ${e.status==='suspendido' ?`<button class="btn btn-success btn-full" onclick="activateEmp('${e.id}');M.close('m-emp-detail')">▶ Reactivar</button>`:''}
+    <button class="btn btn-danger btn-full" onclick="delEmp('${e.id}','${esc(e.razonSocial)}');M.close('m-emp-detail')">🗑 Eliminar</button>`;
+  M.open('m-emp-detail');
+};
+
+window.approveEmp=function(id){ const e=DB.empresas().find(x=>x.id===id); DB.updEmp(id,{status:'activo'}); DB.log('Empresa aprobada: '+e?.razonSocial,'admin'); T.ok('Empresa aprobada: '+e?.razonSocial); renderEmps(); updateKPIs(); renderOvLog(); };
+window.suspendEmp=function(id){ const e=DB.empresas().find(x=>x.id===id); M.confirm(`¿Suspender "${e?.razonSocial}"?`,()=>{ DB.updEmp(id,{status:'suspendido'}); DB.log('Empresa suspendida: '+e?.razonSocial,'admin'); T.warn('Empresa suspendida.'); renderEmps(); updateKPIs(); renderOvLog(); }); };
+window.activateEmp=function(id){ const e=DB.empresas().find(x=>x.id===id); DB.updEmp(id,{status:'activo'}); DB.log('Empresa reactivada: '+e?.razonSocial,'admin'); T.ok('Empresa reactivada.'); renderEmps(); updateKPIs(); renderOvLog(); };
+window.delEmp=function(id,nombre){ M.confirm(`¿Eliminar la empresa "${nombre}"?`,()=>{ DB.delEmp(id); DB.log('Empresa eliminada: '+nombre,'admin'); T.err('Empresa eliminada.'); renderEmps(); updateKPIs(); renderOvLog(); }); };
+
+/* ── RETOS ── */
+function renderRetos(){
+  const tbody=document.getElementById('tbl-retos'); if(!tbody)return;
+  const list=DB.retos();
+  if(!list.length){ tbody.innerHTML='<tr><td colspan="5" class="empty-state">Sin retos. ¡Crea el primero!</td></tr>'; return; }
+  tbody.innerHTML=list.map(r=>`<tr>
+    <td><strong>${esc(r.titulo)}</strong><div style="font-size:.72rem;color:var(--muted);margin-top:.15rem">${esc(r.desc.substring(0,60))}...</div></td>
+    <td><span class="badge b-green">${esc(r.cat)}</span></td>
+    <td>${esc(r.dur)}</td>
+    <td><strong style="color:var(--sage)">+${r.puntos}</strong></td>
+    <td><button class="btn btn-sm btn-danger" onclick="delReto('${r.id}','${esc(r.titulo)}')">🗑 Eliminar</button></td>
+  </tr>`).join('');
+}
+window.delReto=function(id,titulo){ M.confirm(`¿Eliminar el reto "${titulo}"?`,()=>{ DB.delReto(id); DB.log('Reto eliminado: '+titulo,'admin'); T.info('Reto eliminado.'); renderRetos(); updateKPIs(); }); };
+document.getElementById('f-nuevo-reto').onsubmit=e=>{
+  e.preventDefault(); const fm=e.target;
+  const titulo=fm.titulo.value.trim(), desc=fm.desc.value.trim();
+  if(!titulo||!desc) return T.warn('Completa título y descripción.');
+  DB.addReto({ titulo, desc, puntos:parseInt(fm.puntos.value)||100, dur:fm.dur.value.trim()||'7 días', cat:fm.cat.value });
+  DB.log('Reto creado: '+titulo,'admin'); T.ok('Reto creado: '+titulo);
+  fm.reset(); M.close('m-nuevo-reto'); renderRetos(); updateKPIs();
+};
+
+/* ── ADMINS ── */
+function renderAdmins(){
+  const c=document.getElementById('admins-list'); if(!c)return;
+  const list=DB.admins();
+  c.innerHTML=list.map(a=>`
+    <div class="admin-card">
+      <div class="ava gold-av" style="width:38px;height:38px;font-size:.78rem">${initials(a.nombre)}</div>
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:.9rem;color:var(--white)">${esc(a.nombre)}</div>
+        <div style="font-size:.72rem;color:var(--muted)">@${esc(a.username)} · Registrado ${fmtDate(a.createdAt)}</div>
+      </div>
+      <span class="badge ${a.role==='superadmin'?'b-gold':'b-blue'}">${a.role}</span>
+      ${a.id!==sess.id&&a.role!=='superadmin'?`<button class="btn btn-sm btn-danger" onclick="delAdmin('${a.id}','${esc(a.nombre)}')">🗑</button>`:''}
+    </div>`).join('');
+}
+window.delAdmin=function(id,nombre){ M.confirm(`¿Eliminar el admin "${nombre}"?`,()=>{ DB.delAdmin(id); DB.log('Admin eliminado: '+nombre,'admin'); T.err('Admin eliminado.'); renderAdmins(); updateKPIs(); }); };
+document.getElementById('f-nuevo-admin').onsubmit=e=>{
+  e.preventDefault(); const fm=e.target;
+  const nombre=fm.nombre.value.trim(), username=fm.username.value.trim(), password=fm.password.value;
+  if(!nombre||!username||password.length<6) return T.warn('Completa todos los campos. Contraseña mínimo 6 caracteres.');
+  const res=DB.addAdmin({nombre,username,password});
+  if(!res.ok) return T.err(res.msg);
+  DB.log('Nuevo admin creado: '+nombre,'admin'); T.ok('Admin "'+nombre+'" creado.');
+  fm.reset(); M.close('m-nuevo-admin'); renderAdmins(); updateKPIs();
+};
+
+/* ── LOG TABLE ── */
+function renderLog(){
+  const q=(document.getElementById('search-log')?.value||'').toLowerCase();
+  const tp=document.getElementById('filter-log-tipo')?.value||'';
+  const tbody=document.getElementById('tbl-log'); if(!tbody)return;
+  let list=DB.getLogs().slice(0,100);
+  if(q) list=list.filter(l=>l.msg.toLowerCase().includes(q));
+  if(tp) list=list.filter(l=>l.tipo===tp);
+  if(!list.length){ tbody.innerHTML='<tr><td colspan="3" class="empty-state">Sin registros</td></tr>'; return; }
+  tbody.innerHTML=list.map(l=>`<tr>
+    <td style="white-space:nowrap">${ago(l.t)}</td>
+    <td><span class="badge ${logBadge(l.tipo)}">${l.tipo}</span></td>
+    <td>${esc(l.msg)}</td>
+  </tr>`).join('');
+}
+
+/* ── NAV SHORTCUT ── */
+function goTab(t){
+  document.querySelectorAll('.nav-item[data-g="a"]').forEach(n=>n.classList.remove('on'));
+  const item=document.querySelector(`.nav-item[data-t="${t}"]`); if(item)item.classList.add('on');
+  document.querySelectorAll('[id^="tp-a"]').forEach(p=>p.classList.remove('on'));
+  const panel=document.getElementById('tp-'+t); if(panel)panel.classList.add('on');
+  animProg();
+}
+
+function logout(){ DB.clearSess(); window.location='../index.html'; }
+
+/* ── INIT ── */
+updateKPIs(); renderOvLog(); renderUsers(); renderEmps(); renderRetos(); renderAdmins(); renderLog(); animProg();
+</script>
+</body>
+</html>

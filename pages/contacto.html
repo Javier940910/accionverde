@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Contacto — Verdes por Acción</title>
+<link rel="stylesheet" href="../assets/css/pages.css"/>
+<style>
+.contact-wrap{max-width:1050px;margin:0 auto;display:grid;grid-template-columns:1fr 1.5fr;gap:60px;align-items:start;}
+.contact-info h2{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--white);font-weight:700;margin-bottom:.9rem;}
+.contact-info h2 em{font-style:italic;color:var(--mint);}
+.contact-info p{color:rgba(168,219,184,.6);font-size:.88rem;line-height:1.8;margin-bottom:1.8rem;}
+.ci-list{display:flex;flex-direction:column;gap:.8rem;}
+.ci-item{display:flex;align-items:center;gap:1rem;padding:1rem 1.2rem;background:var(--glass);border:1px solid var(--border);border-radius:14px;transition:all .22s;}
+.ci-item:hover{border-color:var(--border2);background:rgba(58,140,87,.07);}
+.ci-icon{font-size:1.3rem;flex-shrink:0;width:36px;text-align:center;}
+.ci-text strong{display:block;font-size:.76rem;color:var(--mint);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:2px;}
+.ci-text span{font-size:.84rem;color:rgba(168,219,184,.65);}
+
+.form-card{background:var(--glass);border:1px solid var(--border2);border-radius:22px;padding:2.2rem;backdrop-filter:blur(24px);position:relative;overflow:hidden;}
+.form-card::before{content:'';position:absolute;top:-1px;left:15%;right:15%;height:1px;background:linear-gradient(90deg,transparent,rgba(109,191,138,.4),transparent);}
+.form-card h2{font-family:'Cormorant Garamond',serif;font-size:1.6rem;color:var(--white);font-weight:700;margin-bottom:1.4rem;}
+.fld{margin-bottom:1rem;}
+.fld label{display:block;font-size:.68rem;color:rgba(109,191,138,.7);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:.4rem;font-weight:600;}
+.fld input,.fld select,.fld textarea{width:100%;padding:.72rem 1rem;background:rgba(255,255,255,.04);border:1px solid rgba(109,191,138,.14);border-radius:10px;color:var(--white);font-family:'Outfit',sans-serif;font-size:.87rem;transition:all .22s;outline:none;appearance:none;}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:rgba(109,191,138,.42);background:rgba(109,191,138,.06);box-shadow:0 0 0 3px rgba(109,191,138,.07);}
+.fld input::placeholder,.fld textarea::placeholder{color:rgba(255,255,255,.18);}
+.fld select option{background:#0a1f10;color:var(--white);}
+.fld textarea{resize:vertical;min-height:100px;}
+.fld-row{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;}
+.check-row{display:flex;align-items:flex-start;gap:.75rem;margin-bottom:1.2rem;}
+.check-row input{margin-top:3px;width:auto;flex-shrink:0;accent-color:var(--sage);}
+.check-row label{font-size:.76rem;color:rgba(168,219,184,.5);line-height:1.5;}
+.check-row label a{color:var(--mint);text-decoration:none;}
+.btn-send{width:100%;padding:.85rem;border-radius:11px;background:linear-gradient(135deg,var(--sage),var(--leaf));color:var(--white);font-weight:600;font-size:.9rem;cursor:pointer;border:none;transition:all .25s;font-family:'Outfit',sans-serif;letter-spacing:.3px;box-shadow:0 6px 24px rgba(58,140,87,.3);}
+.btn-send:hover{transform:translateY(-2px);box-shadow:0 10px 36px rgba(109,191,138,.4);}
+.success-msg{display:none;text-align:center;padding:2rem;background:rgba(58,140,87,.08);border:1px solid rgba(58,140,87,.25);border-radius:14px;margin-top:1rem;}
+.success-msg.show{display:block;}
+.success-msg h3{font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:var(--white);margin-bottom:.5rem;}
+.success-msg p{color:rgba(168,219,184,.6);font-size:.85rem;}
+@media(max-width:900px){.contact-wrap{grid-template-columns:1fr;}.fld-row{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="orb-layer"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div><div class="orb orb4"></div></div>
+<div class="leaf-layer" id="leaf-layer"></div>
+<div class="grid-overlay"></div>
+<div id="toasts"></div>
+
+<nav class="navbar" id="navbar">
+  <a class="nav-logo" href="../index.html"><div class="logo-mark">🌿</div><span class="logo-text">Verdes<em>por</em>Acción</span></a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="../index.html">Inicio</a></li>
+    <li><a href="quienes-somos.html">Quiénes Somos</a></li>
+    <li><a href="mision-vision.html">Misión &amp; Visión</a></li>
+    <li><a href="parques.html">Parques</a></li>
+    <li><a href="contenido.html">Contenido</a></li>
+    <li><a href="contacto.html" class="active">Contacto</a></li>
+  </ul>
+  <button class="nav-toggle" onclick="toggleNav()">☰</button>
+</nav>
+
+<section class="page-hero">
+  <div class="hero-eyebrow"><div class="dot"></div>📬 Habla con nosotros</div>
+  <h1>Ponte en <em>Contacto</em></h1>
+  <p>¿Tienes preguntas sobre la plataforma o quieres registrar tu organización? Escríbenos, estamos aquí para ayudarte.</p>
+  <div class="page-scroll-hint">
+    <div class="scroll-wheel"></div>
+    <span>Explorar</span>
+  </div>
+</section>
+
+<section class="page-section">
+  <div class="contact-wrap">
+    <div class="contact-info reveal">
+      <div class="section-label">Información</div>
+      <h2>Estamos aquí<br/><em>para ayudarte</em></h2>
+      <p>Ya seas un ciudadano queriendo reportar problemas en tu parque, o una organización interesada en gestionar voluntariados, el equipo de Verdes por Acción está listo para orientarte.</p>
+      <div class="ci-list">
+        <div class="ci-item"><span class="ci-icon">📧</span><div class="ci-text"><strong>Correo electrónico</strong><span>info@verdesporaccion.co</span></div></div>
+        <div class="ci-item"><span class="ci-icon">📞</span><div class="ci-text"><strong>Teléfono</strong><span>+57 (1) 234 5678</span></div></div>
+        <div class="ci-item"><span class="ci-icon">📍</span><div class="ci-text"><strong>Ubicación</strong><span>Bogotá D.C., Colombia</span></div></div>
+        <div class="ci-item"><span class="ci-icon">🕐</span><div class="ci-text"><strong>Horario de atención</strong><span>Lunes a viernes: 8:00 AM – 5:00 PM</span></div></div>
+        <div class="ci-item"><span class="ci-icon">⚖️</span><div class="ci-text"><strong>Datos personales (Ley 1581/2012)</strong><span>protecciondatos@verdesporaccion.co</span></div></div>
+      </div>
+    </div>
+
+    <div class="form-card reveal reveal-d2">
+      <h2>Envíanos un <em style="font-style:italic;color:var(--mint);">mensaje</em></h2>
+      <div id="form-area">
+        <div class="fld-row">
+          <div class="fld"><label>Nombre completo</label><input type="text" id="ct-nombre" placeholder="Tu nombre"/></div>
+          <div class="fld"><label>Correo electrónico</label><input type="email" id="ct-email" placeholder="tucorreo@email.com"/></div>
+        </div>
+        <div class="fld">
+          <label>Tipo de consulta</label>
+          <select id="ct-tipo">
+            <option>Soy ciudadano — tengo una pregunta</option>
+            <option>Quiero registrar mi organización como convenio</option>
+            <option>Tengo un problema técnico</option>
+            <option>Consulta sobre datos personales (ARCO)</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="fld"><label>Asunto</label><input type="text" id="ct-asunto" placeholder="¿Sobre qué nos escribes?"/></div>
+        <div class="fld"><label>Mensaje</label><textarea id="ct-msg" placeholder="Cuéntanos en qué podemos ayudarte..."></textarea></div>
+        <div class="check-row">
+          <input type="checkbox" id="ct-priv"/>
+          <label for="ct-priv">Acepto la <a href="#">Política de Privacidad</a> y el tratamiento de mis datos personales según la Ley 1581/2012.</label>
+        </div>
+        <button class="btn-send" onclick="enviarMensaje()">Enviar mensaje 🌿</button>
+      </div>
+      <div class="success-msg" id="success-msg">
+        <div style="font-size:2.5rem;margin-bottom:.8rem;">✅</div>
+        <h3>¡Mensaje enviado!</h3>
+        <p>Gracias por escribirnos. Te responderemos en menos de 24 horas hábiles.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo"><div class="logo-mark">🌿</div><span>Verdes<em>por</em>Acción</span></div>
+    <div class="footer-links"><a href="../index.html">Inicio</a><a href="quienes-somos.html">Quiénes Somos</a><a href="mision-vision.html">Misión &amp; Visión</a><a href="contenido.html">Contenido</a><a href="contacto.html">Contacto</a></div>
+    <div class="footer-legal">© 2025 Verdes por Acción · Proyecto Universitario</div>
+  </div>
+</footer>
+<script src="../assets/js/pages-bg.js"></script>
+<script>
+function enviarMensaje(){
+  const nombre=document.getElementById('ct-nombre').value.trim();
+  const email=document.getElementById('ct-email').value.trim();
+  const msg=document.getElementById('ct-msg').value.trim();
+  const priv=document.getElementById('ct-priv').checked;
+  if(!nombre||!email||!msg){toast('Completa los campos obligatorios','warn');return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){toast('Correo inválido','warn');return;}
+  if(!priv){toast('Debes aceptar la política de privacidad','warn');return;}
+  toast('¡Mensaje enviado con éxito!','ok');
+  document.getElementById('form-area').style.display='none';
+  document.getElementById('success-msg').classList.add('show');
+}
+</script>
+</body>
+</html>

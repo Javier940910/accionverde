@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Contenido — Verdes por Acción</title>
+<link rel="stylesheet" href="../assets/css/pages.css"/>
+<style>
+/* FILTER TABS */
+.filter-bar{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center;margin-bottom:2.8rem;}
+.f-btn{padding:.5rem 1.2rem;border-radius:100px;background:rgba(255,255,255,.04);border:1px solid var(--border);color:rgba(168,219,184,.5);font-size:.76rem;font-weight:500;cursor:pointer;transition:all .2s;font-family:'Outfit',sans-serif;letter-spacing:.3px;}
+.f-btn:hover{border-color:var(--border2);color:var(--mist);}
+.f-btn.on{background:rgba(58,140,87,.22);border-color:rgba(109,191,138,.4);color:var(--mint);}
+
+/* FEATURED ARTICLE */
+.feat-article{max-width:1050px;margin:0 auto 3rem;display:grid;grid-template-columns:1fr 1.1fr;gap:0;border-radius:22px;overflow:hidden;border:1px solid var(--border2);background:var(--glass);backdrop-filter:blur(16px);transition:all .3s;}
+.feat-article:hover{border-color:rgba(109,191,138,.35);box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.feat-thumb{background:linear-gradient(145deg,rgba(30,92,52,.6),rgba(10,31,16,.8));display:flex;align-items:center;justify-content:center;font-size:5rem;min-height:260px;}
+.feat-body{padding:2.2rem 2rem;}
+.feat-tag{display:inline-block;padding:.28rem .8rem;border-radius:100px;background:rgba(109,191,138,.1);border:1px solid rgba(109,191,138,.2);font-size:.66rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--mint);margin-bottom:.9rem;}
+.feat-body h2{font-family:'Cormorant Garamond',serif;font-size:1.7rem;color:var(--white);font-weight:700;line-height:1.15;margin-bottom:.8rem;}
+.feat-body p{font-size:.84rem;color:rgba(168,219,184,.6);line-height:1.75;margin-bottom:1.2rem;}
+.feat-meta{display:flex;align-items:center;gap:.7rem;font-size:.72rem;color:rgba(168,219,184,.4);}
+.feat-meta span{display:flex;align-items:center;gap:.3rem;}
+
+/* ARTICLES GRID */
+.articles-grid{max-width:1050px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;}
+.art-card{background:var(--glass);border:1px solid var(--border);border-radius:18px;overflow:hidden;transition:all .28s cubic-bezier(.34,1.56,.64,1);cursor:pointer;}
+.art-card:hover{border-color:var(--border2);transform:translateY(-7px);box-shadow:0 20px 50px rgba(0,0,0,.3);}
+.art-thumb{height:130px;display:flex;align-items:center;justify-content:center;font-size:3rem;position:relative;}
+.art-thumb-recycling{background:linear-gradient(135deg,rgba(39,96,68,.5),rgba(10,31,16,.7));}
+.art-thumb-water{background:linear-gradient(135deg,rgba(20,60,100,.5),rgba(10,20,40,.7));}
+.art-thumb-energy{background:linear-gradient(135deg,rgba(100,80,0,.4),rgba(50,35,5,.7));}
+.art-thumb-nature{background:linear-gradient(135deg,rgba(30,92,52,.5),rgba(5,25,10,.7));}
+.art-thumb-mobility{background:linear-gradient(135deg,rgba(50,70,20,.5),rgba(15,30,5,.7));}
+.art-thumb-community{background:linear-gradient(135deg,rgba(80,30,60,.4),rgba(30,10,25,.7));}
+.art-body{padding:1.2rem 1.1rem;}
+.art-tag{display:inline-block;padding:.2rem .65rem;border-radius:100px;background:rgba(109,191,138,.08);border:1px solid rgba(109,191,138,.15);font-size:.62rem;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--mint);margin-bottom:.6rem;}
+.art-body h3{font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--white);font-weight:700;line-height:1.3;margin-bottom:.5rem;}
+.art-body p{font-size:.77rem;color:rgba(168,219,184,.5);line-height:1.6;margin-bottom:.9rem;}
+.art-footer{display:flex;align-items:center;justify-content:space-between;font-size:.68rem;color:rgba(168,219,184,.38);}
+.art-read{color:var(--mint);font-weight:600;text-decoration:none;font-size:.74rem;transition:color .2s;}
+.art-read:hover{color:var(--gold2);}
+
+/* TIPS STRIP */
+.tips-strip{background:rgba(5,15,8,.5);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.tips-grid{max-width:1050px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;}
+.tip-card{background:var(--glass);border:1px solid var(--border);border-radius:14px;padding:1.4rem 1.1rem;text-align:center;transition:all .25s;}
+.tip-card:hover{border-color:var(--border2);background:rgba(58,140,87,.07);transform:translateY(-4px);}
+.tip-ico{font-size:1.8rem;display:block;margin-bottom:.7rem;}
+.tip-title{font-size:.82rem;font-weight:600;color:var(--white);margin-bottom:.4rem;}
+.tip-text{font-size:.74rem;color:rgba(168,219,184,.5);line-height:1.55;}
+
+@media(max-width:900px){
+  .feat-article{grid-template-columns:1fr;}
+  .feat-thumb{min-height:160px;}
+  .articles-grid{grid-template-columns:1fr 1fr;}
+  .tips-grid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:580px){.articles-grid{grid-template-columns:1fr;}.tips-grid{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="orb-layer"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div><div class="orb orb4"></div></div>
+<div class="leaf-layer" id="leaf-layer"></div>
+<div class="grid-overlay"></div>
+<div id="toasts"></div>
+
+<nav class="navbar" id="navbar">
+  <a class="nav-logo" href="../index.html"><div class="logo-mark">🌿</div><span class="logo-text">Verdes<em>por</em>Acción</span></a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="../index.html">Inicio</a></li>
+    <li><a href="quienes-somos.html">Quiénes Somos</a></li>
+    <li><a href="mision-vision.html">Misión &amp; Visión</a></li>
+    <li><a href="parques.html">Parques</a></li>
+    <li><a href="contenido.html" class="active">Contenido</a></li>
+    <li><a href="contacto.html">Contacto</a></li>
+  </ul>
+  <button class="nav-toggle" onclick="toggleNav()">☰</button>
+</nav>
+
+<section class="page-hero">
+  <div class="hero-eyebrow"><div class="dot"></div>📚 Educación ambiental</div>
+  <h1>Contenido <em>Verde</em></h1>
+  <p>Guías, tips y artículos para que tomes acción desde hoy. Aprende a reducir tu huella y cuidar los espacios verdes de tu ciudad.</p>
+  <div class="page-scroll-hint">
+    <div class="scroll-wheel"></div>
+    <span>Explorar</span>
+  </div>
+</section>
+
+<section class="page-section">
+  <!-- FILTER -->
+  <div class="filter-bar reveal">
+    <button class="f-btn on" onclick="filterAll(this)">Todos</button>
+    <button class="f-btn" onclick="filterCat('Reciclaje',this)">♻️ Reciclaje</button>
+    <button class="f-btn" onclick="filterCat('Agua',this)">💧 Agua</button>
+    <button class="f-btn" onclick="filterCat('Energía',this)">⚡ Energía</button>
+    <button class="f-btn" onclick="filterCat('Naturaleza',this)">🌿 Naturaleza</button>
+    <button class="f-btn" onclick="filterCat('Movilidad',this)">🚲 Movilidad</button>
+    <button class="f-btn" onclick="filterCat('Comunidad',this)">🤝 Comunidad</button>
+  </div>
+
+  <!-- FEATURED -->
+  <div class="feat-article reveal" id="feat-art">
+    <div class="feat-thumb">🌎</div>
+    <div class="feat-body">
+      <span class="feat-tag">Destacado · Naturaleza</span>
+      <h2>Guía completa para ser guardián de tu parque local</h2>
+      <p>Aprende cómo reportar daños, organizar jornadas de limpieza y conectar con otros vecinos para mantener los espacios verdes de tu localidad en perfectas condiciones durante todo el año.</p>
+      <div class="feat-meta">
+        <span>📅 Enero 2025</span>
+        <span>⏱️ 8 min lectura</span>
+        <span>👁 2.4K vistas</span>
+      </div>
+      <a href="#" onclick="toast('Artículo completo próximamente','ok');return false;" class="btn-primary" style="margin-top:1.2rem;display:inline-block;font-size:.82rem;padding:.65rem 1.4rem;">Leer artículo completo →</a>
+    </div>
+  </div>
+
+  <!-- ARTICLES -->
+  <div class="articles-grid" id="articles-grid">
+    <div class="art-card" data-cat="Reciclaje">
+      <div class="art-thumb art-thumb-recycling">♻️</div>
+      <div class="art-body">
+        <span class="art-tag">Reciclaje</span>
+        <h3>Separación de residuos en 5 pasos</h3>
+        <p>Guía práctica para implementar el reciclaje en tu hogar y reducir los residuos que llegan a los parques de tu barrio.</p>
+        <div class="art-footer"><span>⏱ 4 min</span><a href="#" onclick="toast('Próximamente','ok');return false;" class="art-read">Leer →</a></div>
+      </div>
+    </div>
+    <div class="art-card" data-cat="Agua">
+      <div class="art-thumb art-thumb-water">💧</div>
+      <div class="art-body">
+        <span class="art-tag">Agua</span>
+        <h3>Ahorra agua y salva ríos urbanos</h3>
+        <p>Técnicas simples para reducir el consumo doméstico y proteger las fuentes hídricas que alimentan los humedales bogotanos.</p>
+        <div class="art-footer"><span>⏱ 5 min</span><a href="#" onclick="toast('Próximamente','ok');return false;" class="art-read">Leer →</a></div>
+      </div>
+    </div>
+    <div class="art-card" data-cat="Energía">
+      <div class="art-thumb art-thumb-energy">⚡</div>
+      <div class="art-body">
+        <span class="art-tag">Energía</span>
+        <h3>Tu huella de carbono paso a paso</h3>
+        <p>Cómo calcular y reducir las emisiones de CO₂ de tu hogar y transporte para contribuir a los objetivos climáticos de Colombia.</p>
+        <div class="art-footer"><span>⏱ 6 min</span><a href="#" onclick="toast('Próximamente','ok');return false;" class="art-read">Leer →</a></div>
+      </div>
+    </div>
+    <div class="art-card" data-cat="Naturaleza">
+      <div class="art-thumb art-thumb-nature">🌱</div>
+      <div class="art-body">
+        <span class="art-tag">Naturaleza</span>
+        <h3>Cómo iniciar una huerta urbana</h3>
+        <p>Todo lo que necesitas saber para cultivar alimentos en tu hogar, balcón o jardín comunitario con pocos recursos.</p>
+        <div class="art-footer"><span>⏱ 7 min</span><a href="#" onclick="toast('Próximamente','ok');return false;" class="art-read">Leer →</a></div>
+      </div>
+    </div>
+    <div class="art-card" data-cat="Movilidad">
+      <div class="art-thumb art-thumb-mobility">🚲</div>
+      <div class="art-body">
+        <span class="art-tag">Movilidad</span>
+        <h3>Movilidad sostenible en Bogotá</h3>
+        <p>Ciclovías, TransMilenio, bicicleta y caminata: cómo moverse por la ciudad reduciendo emisiones y mejorando tu salud.</p>
+        <div class="art-footer"><span>⏱ 4 min</span><a href="#" onclick="toast('Próximamente','ok');return false;" class="art-read">Leer →</a></div>
+      </div>
+    </div>
+    <div class="art-card" data-cat="Comunidad">
+      <div class="art-thumb art-thumb-community">🤝</div>
+      <div class="art-body">
+        <span class="art-tag">Comunidad</span>
+        <h3>Organiza una jornada de limpieza</h3>
+        <p>Paso a paso para convocar vecinos, coordinar logística y ejecutar una jornada de limpieza exitosa en tu parque local.</p>
+        <div class="art-footer"><span>⏱ 5 min</span><a href="#" onclick="toast('Próximamente','ok');return false;" class="art-read">Leer →</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TIPS STRIP -->
+<section class="page-section tips-strip">
+  <div class="section-center reveal" style="margin-bottom:2.5rem;">
+    <div class="section-label center">Acciones rápidas</div>
+    <h2 class="section-title">Hazlo <em>hoy mismo</em></h2>
+  </div>
+  <div class="tips-grid">
+    <div class="tip-card reveal reveal-d1"><span class="tip-ico">🧴</span><div class="tip-title">Reduce plásticos</div><p class="tip-text">Lleva tu propia bolsa y evita empaques de un solo uso.</p></div>
+    <div class="tip-card reveal reveal-d2"><span class="tip-ico">🚿</span><div class="tip-title">Ducha de 5 min</div><p class="tip-text">Reducir tu ducha a 5 minutos ahorra hasta 45 litros diarios.</p></div>
+    <div class="tip-card reveal reveal-d3"><span class="tip-ico">🌳</span><div class="tip-title">Adopta un árbol</div><p class="tip-text">Registra y cuida un árbol en tu barrio mediante la plataforma.</p></div>
+    <div class="tip-card reveal reveal-d4"><span class="tip-ico">📸</span><div class="tip-title">Reporta daños</div><p class="tip-text">Si ves un parque en mal estado, repórtalo desde tu cuenta.</p></div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo"><div class="logo-mark">🌿</div><span>Verdes<em>por</em>Acción</span></div>
+    <div class="footer-links"><a href="../index.html">Inicio</a><a href="quienes-somos.html">Quiénes Somos</a><a href="mision-vision.html">Misión &amp; Visión</a><a href="contenido.html">Contenido</a><a href="contacto.html">Contacto</a></div>
+    <div class="footer-legal">© 2025 Verdes por Acción · Proyecto Universitario</div>
+  </div>
+</footer>
+<script src="../assets/js/pages-bg.js"></script>
+<script>
+function filterAll(btn){
+  document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('.art-card').forEach(c=>{c.style.display='flex';c.style.flexDirection='column';});
+  document.getElementById('feat-art').style.display='grid';
+}
+function filterCat(cat,btn){
+  document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('.art-card').forEach(c=>{
+    c.style.display = c.dataset.cat===cat ? 'flex' : 'none';
+    if(c.dataset.cat===cat) c.style.flexDirection='column';
+  });
+  document.getElementById('feat-art').style.display='none';
+}
+</script>
+</body>
+</html>

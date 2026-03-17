@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Verdes por Acción · Mi Portal</title>
+<link rel="stylesheet" href="../assets/css/global.css">
+<style>
+.reto-cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1.1rem; }
+.reto-card { background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:14px; padding:1.3rem; transition:all .2s; }
+.reto-card:hover { border-color:rgba(122,184,147,.4); transform:translateY(-2px); }
+.reto-cat { font-size:.68rem; color:var(--sage); text-transform:uppercase; letter-spacing:1px; margin-bottom:.4rem; }
+.reto-title { font-family:'Playfair Display',serif; font-size:1rem; color:var(--white); margin-bottom:.4rem; }
+.reto-desc { font-size:.78rem; color:var(--muted); margin-bottom:1rem; line-height:1.45; }
+.reto-footer { display:flex; align-items:center; justify-content:space-between; }
+.reto-pts { font-size:.8rem; font-weight:600; color:var(--sage); }
+.ranking-item { display:flex; align-items:center; gap:.75rem; padding:.6rem 0; border-bottom:1px solid rgba(122,184,147,.06); }
+.rank-num { font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--muted); width:28px; text-align:center; flex-shrink:0; }
+.rank-name { flex:1; font-size:.84rem; color:rgba(255,255,255,.85); }
+.rank-pts { font-size:.78rem; color:var(--sage); font-weight:600; }
+.badge-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:.75rem; }
+.badge-item { text-align:center; }
+.badge-item .bico { font-size:2rem; display:block; }
+.badge-item .bnm { font-size:.65rem; color:var(--muted); margin-top:.2rem; }
+.badge-item.locked { opacity:.3; }
+.profile-row { display:flex; align-items:center; gap:.8rem; padding:.55rem 0; border-bottom:1px solid rgba(122,184,147,.06); }
+.profile-row .lbl { font-size:.78rem; color:var(--muted); width:120px; flex-shrink:0; }
+.profile-row .val { font-size:.84rem; color:rgba(255,255,255,.85); }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div id="toasts"></div>
+
+<!-- Confirm Modal -->
+<div class="overlay hide" id="confirm-overlay">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-hdr"><h3>⚠️ Confirmar</h3><button class="modal-close" onclick="M.close('confirm-overlay')">✕</button></div>
+    <p id="c-msg" style="color:rgba(255,255,255,.8);margin-bottom:1.4rem;font-size:.9rem;line-height:1.5"></p>
+    <div style="display:flex;gap:.7rem">
+      <button class="btn btn-danger btn-full" id="c-yes">Sí, continuar</button>
+      <button class="btn btn-outline btn-full" onclick="M.close('confirm-overlay')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Acción Ambiental -->
+<div class="overlay hide" id="m-accion">
+  <div class="modal">
+    <div class="modal-hdr"><h3>🌱 Registrar Acción Ambiental</h3><button class="modal-close" onclick="M.close('m-accion')">✕</button></div>
+    <form id="f-accion">
+      <div class="field"><label>Tipo de acción *</label>
+        <select name="tipo"><option value="">-- Selecciona --</option><option>Reciclaje</option><option>Siembra de árbol</option><option>Movilidad sostenible</option><option>Ahorro de agua</option><option>Ahorro de energía</option><option>Compostaje</option><option>Limpieza comunitaria</option><option>Jardinería urbana</option><option>Otra</option></select>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Cantidad / Magnitud</label><input name="cantidad" type="number" placeholder="5" min="0" step="0.1"></div>
+        <div class="field"><label>Unidad</label>
+          <select name="unidad"><option>kg</option><option>litros</option><option>km</option><option>árboles</option><option>horas</option><option>unidades</option></select>
+        </div>
+      </div>
+      <div class="field"><label>Descripción *</label><textarea name="desc" placeholder="Describe brevemente tu acción ambiental..."></textarea></div>
+      <button type="submit" class="btn btn-primary btn-full">✅ Registrar acción</button>
+    </form>
+  </div>
+</div>
+
+<!-- Mobile toggle -->
+<button class="mob-tog" data-sb="sb-u" data-sb-ov="sb-u-ov">☰</button>
+<div class="sb-overlay" id="sb-u-ov"></div>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sb-u">
+    <div class="sb-logo">
+      <span class="ico">🌿</span>
+      <div class="nm">Verdes por Acción <small>Portal Usuario</small></div>
+    </div>
+    <div class="sb-sec">
+      <div class="sb-sec-title">Principal</div>
+      <div class="nav-item on"  data-g="u" data-t="u-home"><span class="ni">🏠</span> Inicio</div>
+      <div class="nav-item"     data-g="u" data-t="u-retos"><span class="ni">🎯</span> Retos Ambientales</div>
+      <div class="nav-item"     data-g="u" data-t="u-historial"><span class="ni">📋</span> Mi Historial</div>
+      <div class="nav-item"     data-g="u" data-t="u-ranking"><span class="ni">🏆</span> Ranking Verde</div>
+    </div>
+    <div class="sb-sec">
+      <div class="sb-sec-title">Personal</div>
+      <div class="nav-item" data-g="u" data-t="u-perfil"><span class="ni">👤</span> Mi Perfil</div>
+      <div class="nav-item" data-g="u" data-t="u-insignias"><span class="ni">🎖️</span> Insignias</div>
+    </div>
+    <div class="sb-foot">
+      <div class="user-chip">
+        <div class="ava" id="u-av">MG</div>
+        <div>
+          <div class="chip-name" id="u-cn">Usuario</div>
+          <div class="chip-role">Miembro activo</div>
+        </div>
+        <button class="logout-btn" onclick="logout()" title="Cerrar sesión">⏻</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- HOME -->
+    <div class="tab-panel on" id="tp-u-home">
+      <div class="pg-hdr">
+        <h1>¡Hola, <span id="u-hola">Usuario</span>! 🌿</h1>
+        <p>Tu impacto ambiental en tiempo real</p>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-val" id="u-pts">0</div><div class="stat-lbl">Puntos verdes</div><div class="stat-sub">Mi nivel: <span id="u-nivel">Semilla</span></div></div>
+        <div class="stat-card"><div class="stat-icon">📍</div><div class="stat-val" id="u-acts">0</div><div class="stat-lbl">Acciones registradas</div><div class="stat-sub">Esta plataforma</div></div>
+        <div class="stat-card"><div class="stat-icon">🌳</div><div class="stat-val" id="u-arb">0</div><div class="stat-lbl">Árboles plantados</div><div class="stat-sub">Contribución directa</div></div>
+        <div class="stat-card"><div class="stat-icon">♻️</div><div class="stat-val" id="u-res">0 kg</div><div class="stat-lbl">Residuos reciclados</div><div class="stat-sub">Impacto medido</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">
+            📊 Indicadores de Impacto
+            <button class="btn btn-sm btn-primary" onclick="M.open('m-accion')">+ Registrar acción</button>
+          </div>
+          <div class="prog-item"><div class="prog-lbl"><span>CO₂ evitado</span><span>68%</span></div><div class="prog-bar"><div class="prog-fill" data-w="68%" style="width:0"></div></div></div>
+          <div class="prog-item"><div class="prog-lbl"><span>Agua ahorrada</span><span>45%</span></div><div class="prog-bar"><div class="prog-fill" data-w="45%" style="width:0"></div></div></div>
+          <div class="prog-item"><div class="prog-lbl"><span>Energía renovable</span><span>82%</span></div><div class="prog-bar"><div class="prog-fill" data-w="82%" style="width:0"></div></div></div>
+          <div class="prog-item"><div class="prog-lbl"><span>Residuos cero</span><span>55%</span></div><div class="prog-bar"><div class="prog-fill" data-w="55%" style="width:0"></div></div></div>
+          <div class="prog-item"><div class="prog-lbl"><span>Movilidad sostenible</span><span>70%</span></div><div class="prog-bar"><div class="prog-fill" data-w="70%" style="width:0"></div></div></div>
+        </div>
+        <div>
+          <div class="card mb2">
+            <div class="card-title">🗓️ Retos activos</div>
+            <ul class="act-list">
+              <li class="act-item"><div class="act-dot"></div><div><div class="act-text">Semana sin plástico <span class="badge b-yellow">5/7 días</span></div></div></li>
+              <li class="act-item"><div class="act-dot gold"></div><div><div class="act-text">Huerta urbana <span class="badge b-green">✓ Completado</span></div></div></li>
+              <li class="act-item"><div class="act-dot"></div><div><div class="act-text">Bicicleta al trabajo <span class="badge b-yellow">3/10</span></div></div></li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="card-title">🌍 Impacto colectivo</div>
+            <div style="text-align:center;padding:.5rem 0">
+              <div style="font-family:'Playfair Display',serif;font-size:2.5rem;color:var(--white)">4,821</div>
+              <div style="font-size:.75rem;color:var(--muted)">usuarios activos en la plataforma</div>
+            </div>
+            <div class="divider"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;text-align:center">
+              <div><div style="font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--sage)">12.4 t</div><div style="font-size:.68rem;color:var(--muted)">CO₂ evitado</div></div>
+              <div><div style="font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--sage)">6,200</div><div style="font-size:.68rem;color:var(--muted)">Árboles sembrados</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RETOS -->
+    <div class="tab-panel" id="tp-u-retos">
+      <div class="pg-hdr">
+        <h1>🎯 Retos Ambientales</h1>
+        <p>Participa y acumula puntos verdes</p>
+      </div>
+      <div class="reto-cards" id="reto-cards"></div>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div class="tab-panel" id="tp-u-historial">
+      <div class="pg-hdr">
+        <h1>📋 Mi Historial</h1>
+        <p>Registro de todas tus acciones ambientales</p>
+      </div>
+      <div class="card">
+        <div class="card-title">
+          Acciones registradas
+          <button class="btn btn-sm btn-primary" onclick="M.open('m-accion')">+ Nueva acción</button>
+        </div>
+        <ul class="act-list" id="u-historial-list">
+          <li class="act-item"><div class="act-dot"></div><div><div class="act-text">Reciclaje de 5 kg de plástico — <strong>+50 pts</strong></div><div class="act-time">hace 2 días</div></div></li>
+          <li class="act-item"><div class="act-dot"></div><div><div class="act-text">Movilidad sostenible — 3 km en bicicleta — <strong>+30 pts</strong></div><div class="act-time">hace 4 días</div></div></li>
+          <li class="act-item"><div class="act-dot gold"></div><div><div class="act-text">Siembra de árbol nativo — <strong>+100 pts</strong></div><div class="act-time">hace 1 semana</div></div></li>
+          <li class="act-item"><div class="act-dot"></div><div><div class="act-text">Ahorro de agua — 20 litros — <strong>+20 pts</strong></div><div class="act-time">hace 10 días</div></div></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- RANKING -->
+    <div class="tab-panel" id="tp-u-ranking">
+      <div class="pg-hdr">
+        <h1>🏆 Ranking Verde</h1>
+        <p>Top usuarios con mayor impacto ambiental</p>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">🌍 Top Nacional</div>
+          <div id="ranking-list">
+            <div class="ranking-item"><div class="rank-num">🥇</div><div class="ava" style="width:28px;height:28px;font-size:.65rem">CR</div><div class="rank-name">Carlos Ruiz — Medellín</div><div class="rank-pts">4,200 pts</div></div>
+            <div class="ranking-item"><div class="rank-num">🥈</div><div class="ava" style="width:28px;height:28px;font-size:.65rem">LS</div><div class="rank-name">Laura Suárez — Bogotá</div><div class="rank-pts">3,850 pts</div></div>
+            <div class="ranking-item" id="my-rank" style="background:rgba(74,140,92,.1);border-radius:8px;padding:.4rem .6rem"><div class="rank-num" style="color:var(--sage)">3</div><div class="ava" id="rank-av" style="width:28px;height:28px;font-size:.65rem">TÚ</div><div class="rank-name" id="rank-name" style="color:var(--sage);font-weight:500">Tú</div><div class="rank-pts" id="rank-pts">0 pts</div></div>
+            <div class="ranking-item"><div class="rank-num">4</div><div class="ava" style="width:28px;height:28px;font-size:.65rem">PG</div><div class="rank-name">Pedro Gómez — Cali</div><div class="rank-pts">1,920 pts</div></div>
+            <div class="ranking-item"><div class="rank-num">5</div><div class="ava" style="width:28px;height:28px;font-size:.65rem">AL</div><div class="rank-name">Ana López — Barranquilla</div><div class="rank-pts">1,580 pts</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📊 Mi posición</div>
+          <div class="score-ring" style="border-color:var(--gold)"><div class="sval" style="color:var(--gold)" id="u-rank-pos">#3</div><div class="slbl">ranking</div></div>
+          <div style="text-align:center">
+            <div style="font-size:.82rem;color:var(--muted)">Puntos acumulados</div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--white);margin:.3rem 0" id="u-rank-pts2">0</div>
+            <span class="badge b-gold">Nivel: <span id="u-nivel2">Semilla</span></span>
+          </div>
+          <div class="divider"></div>
+          <div style="font-size:.78rem;color:var(--muted);text-align:center">Próximo nivel: <strong style="color:var(--sage)">Guardián</strong> (3,000 pts)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERFIL -->
+    <div class="tab-panel" id="tp-u-perfil">
+      <div class="pg-hdr">
+        <h1>👤 Mi Perfil</h1>
+        <p>Información de tu cuenta</p>
+      </div>
+      <div class="grid-2-equal">
+        <div class="card">
+          <div class="card-title">Datos personales</div>
+          <div class="profile-row"><div class="lbl">Nombre</div><div class="val" id="p-nombre">-</div></div>
+          <div class="profile-row"><div class="lbl">Correo</div><div class="val" id="p-email">-</div></div>
+          <div class="profile-row"><div class="lbl">Ciudad</div><div class="val" id="p-ciudad">-</div></div>
+          <div class="profile-row"><div class="lbl">Teléfono</div><div class="val" id="p-tel">-</div></div>
+          <div class="profile-row"><div class="lbl">Miembro desde</div><div class="val" id="p-fecha">-</div></div>
+          <div class="profile-row"><div class="lbl">Estado</div><div class="val"><span class="badge b-green">✓ Activo</span></div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">🎖️ Resumen de impacto</div>
+          <div class="score-ring"><div class="sval" id="p-pts-ring">0</div><div class="slbl">puntos</div></div>
+          <div class="prog-item mt2"><div class="prog-lbl"><span>Acciones realizadas</span><span id="p-acts">0</span></div><div class="prog-bar"><div class="prog-fill" id="p-acts-bar" data-w="50%" style="width:0"></div></div></div>
+          <div class="prog-item"><div class="prog-lbl"><span>Retos completados</span><span>2</span></div><div class="prog-bar"><div class="prog-fill" data-w="40%" style="width:0"></div></div></div>
+          <div class="prog-item"><div class="prog-lbl"><span>Nivel de impacto</span><span>68%</span></div><div class="prog-bar"><div class="prog-fill" data-w="68%" style="width:0"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INSIGNIAS -->
+    <div class="tab-panel" id="tp-u-insignias">
+      <div class="pg-hdr">
+        <h1>🎖️ Mis Insignias</h1>
+        <p>Logros desbloqueados en tu camino verde</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Insignias obtenidas</div>
+        <div class="badge-grid">
+          <div class="badge-item"><span class="bico">🌱</span><span class="bnm">Sembrador</span></div>
+          <div class="badge-item"><span class="bico">♻️</span><span class="bnm">Reciclador</span></div>
+          <div class="badge-item"><span class="bico">🚴</span><span class="bnm">Ciclista</span></div>
+          <div class="badge-item"><span class="bico">💧</span><span class="bnm">Ahorrista</span></div>
+          <div class="badge-item locked"><span class="bico">🌳</span><span class="bnm">Guardián</span></div>
+          <div class="badge-item locked"><span class="bico">🦋</span><span class="bnm">Embajador</span></div>
+          <div class="badge-item locked"><span class="bico">🏆</span><span class="bnm">Campeón</span></div>
+          <div class="badge-item locked"><span class="bico">⭐</span><span class="bnm">Leyenda</span></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="../assets/js/core.js"></script>
+<script>
+DB.init(); initMobile(); initNav('u');
+
+const sess=DB.sess();
+if(!sess||sess.role!=='usuario'){ window.location='../index.html'; }
+
+function fill(){
+  const u=DB.loginUser(sess.email,sess.password)||sess;
+  const upd=DB.users().find(x=>x.id===sess.id)||u;
+  document.getElementById('u-hola').textContent  = upd.nombre.split(' ')[0];
+  document.getElementById('u-av').textContent    = initials(upd.nombre);
+  document.getElementById('u-cn').textContent    = upd.nombre;
+  document.getElementById('u-pts').textContent   = (upd.puntos||0).toLocaleString();
+  document.getElementById('u-acts').textContent  = upd.actividades||0;
+  document.getElementById('u-arb').textContent   = upd.arboles||0;
+  document.getElementById('u-res').textContent   = (upd.residuos||0)+' kg';
+  document.getElementById('p-nombre').textContent= upd.nombre;
+  document.getElementById('p-email').textContent = upd.email;
+  document.getElementById('p-ciudad').textContent= upd.ciudad||'-';
+  document.getElementById('p-tel').textContent   = upd.telefono||'-';
+  document.getElementById('p-fecha').textContent = fmtDate(upd.createdAt);
+  document.getElementById('p-pts-ring').textContent = (upd.puntos||0).toLocaleString();
+  document.getElementById('p-acts').textContent  = upd.actividades||0;
+  document.getElementById('rank-name').textContent = upd.nombre;
+  document.getElementById('rank-av').textContent  = initials(upd.nombre);
+  document.getElementById('rank-pts').textContent = (upd.puntos||0).toLocaleString()+' pts';
+  document.getElementById('u-rank-pts2').textContent = (upd.puntos||0).toLocaleString();
+  const nivel = upd.puntos>=5000?'Leyenda':upd.puntos>=3000?'Guardián':upd.puntos>=1500?'Explorador':upd.puntos>=500?'Activista':'Semilla';
+  document.querySelectorAll('#u-nivel,#u-nivel2').forEach(e=>e.textContent=nivel);
+  animProg();
+}
+
+function renderRetos(){
+  const c=document.getElementById('reto-cards');
+  c.innerHTML=DB.retos().map(r=>`
+    <div class="reto-card">
+      <div class="reto-cat">${esc(r.cat)}</div>
+      <div class="reto-title">${esc(r.titulo)}</div>
+      <div class="reto-desc">${esc(r.desc)}</div>
+      <div class="reto-footer">
+        <span class="reto-pts">⭐ +${r.puntos} pts · ${esc(r.dur)}</span>
+        <button class="btn btn-sm btn-outline" onclick="inscribirse('${r.id}','${esc(r.titulo)}')">Inscribirse</button>
+      </div>
+    </div>`).join('');
+}
+
+window.inscribirse=function(id,titulo){
+  T.ok(`¡Inscrito en "${titulo}"! 🎯`);
+  DB.log('Usuario se inscribió en reto: '+titulo,'usuario');
+};
+
+document.getElementById('f-accion').onsubmit=e=>{
+  e.preventDefault(); const fm=e.target;
+  const tipo=fm.tipo.value, desc=fm.desc.value.trim();
+  const cantidad=parseFloat(fm.cantidad.value)||1;
+  if(!tipo) return T.warn('Selecciona un tipo de acción.');
+  if(!desc)  return T.warn('Agrega una descripción.');
+  const puntos=Math.round(cantidad*12);
+  const u=DB.users().find(x=>x.id===sess.id);
+  const arboles = tipo==='Siembra de árbol'? (u.arboles||0)+Math.round(cantidad) : u.arboles||0;
+  const residuos = tipo==='Reciclaje'? (u.residuos||0)+cantidad : u.residuos||0;
+  DB.updUser(sess.id,{ puntos:(u.puntos||0)+puntos, actividades:(u.actividades||0)+1, arboles, residuos });
+  DB.log(`Acción: ${tipo} (${cantidad} ${fm.unidad.value}) — ${sess.nombre}`,'usuario');
+  // add to historial UI
+  const list=document.getElementById('u-historial-list');
+  const li=document.createElement('li'); li.className='act-item';
+  li.innerHTML=`<div class="act-dot gold"></div><div><div class="act-text">${esc(tipo)} — ${cantidad} ${esc(fm.unidad.value)} — <strong>+${puntos} pts</strong></div><div class="act-time">hace un momento</div></div>`;
+  list.prepend(li);
+  T.ok(`¡Acción registrada! +${puntos} puntos verdes 🌿`);
+  fm.reset(); M.close('m-accion'); fill();
+};
+
+function logout(){ DB.clearSess(); window.location='../index.html'; }
+
+fill(); renderRetos();
+</script>
+</body>
+</html>

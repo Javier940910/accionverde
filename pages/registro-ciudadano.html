@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registro Ciudadano — Verdes por Acción</title>
+  <link rel="stylesheet" href="../assets/css/styles.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    #toasts { position:fixed;top:1.3rem;right:1.3rem;z-index:9999;display:flex;flex-direction:column;gap:.45rem; }
+    .toast-n { display:flex;align-items:center;gap:.65rem;padding:.78rem 1.1rem;border-radius:12px;font-size:.84rem;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.18);border:1px solid;max-width:320px;animation:toastIn .3s ease;font-family:'DM Sans',sans-serif; }
+    @keyframes toastIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:none} }
+    .toast-ok   { background:rgba(26,61,43,.95); border-color:rgba(74,197,108,.5); color:#74c69d; }
+    .toast-err  { background:rgba(80,10,10,.95);  border-color:rgba(231,76,60,.5);  color:#f1948a; }
+    .toast-warn { background:rgba(80,50,5,.95);   border-color:rgba(212,168,67,.5); color:#d4a843; }
+    .field-err { color:#c0392b; font-size:.8rem; margin-top:4px; display:none; }
+    .form-group.bad input, .form-group.bad select { border-color:#c0392b !important; }
+    .form-group.bad .field-err { display:block; }
+    .success-box { display:none; text-align:center; padding:32px 24px; background:#f0faf3; border:2px solid #2d6a4f; border-radius:16px; margin-top:16px; }
+    .success-box.show { display:block; }
+    .success-box h3 { color:#1a3d2b; font-family:'Playfair Display',serif; font-size:1.5rem; margin-bottom:8px; }
+    .success-box p { color:#4a5568; font-size:.9rem; margin-bottom:16px; }
+  </style>
+</head>
+<body>
+<div id="toasts"></div>
+
+<nav class="navbar" id="navbar">
+  <div class="nav-logo"><span class="logo-leaf">🌿</span><span class="logo-text">Verdes<em>por</em>Acción</span></div>
+  <ul class="nav-links">
+    <li><a href="../index.html">Inicio</a></li>
+    <li><a href="quienes-somos.html">Quiénes Somos</a></li>
+    <li><a href="mision-vision.html">Misión &amp; Visión</a></li>
+    <li><a href="parques.html">Parques</a></li>
+    <li><a href="contenido.html">Contenido</a></li>
+    <li><a href="contacto.html">Contacto</a></li>
+  </ul>
+  <button class="nav-toggle" onclick="toggleMenu()">☰</button>
+</nav>
+
+<section class="page-hero">
+  <span class="hero-badge">👤 Persona Natural</span>
+  <h1>Registro <span class="accent">Ciudadano</span></h1>
+  <p>Crea tu cuenta para reportar problemas en parques, unirte a voluntariados y descargar tus certificados.</p>
+</section>
+
+<section class="page-section">
+  <div class="contact-form" style="max-width:580px;">
+    <h2>Datos personales</h2>
+
+    <div id="form-area">
+      <div class="form-row">
+        <div class="form-group" id="g-nombre">
+          <label>Nombre completo *</label>
+          <input type="text" id="r-nombre" placeholder="Nombres y apellidos"/>
+          <div class="field-err" id="e-nombre">Campo requerido</div>
+        </div>
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="tel" id="r-tel" placeholder="300 000 0000"/>
+        </div>
+      </div>
+      <div class="form-group" id="g-email">
+        <label>Correo electrónico *</label>
+        <input type="email" id="r-email" placeholder="tucorreo@email.com"/>
+        <div class="field-err" id="e-email">Correo inválido</div>
+      </div>
+      <div class="form-group">
+        <label>Ciudad / Localidad</label>
+        <select id="r-ciudad">
+          <option value="">Selecciona tu localidad...</option>
+          <option>Bogotá - Usaquén</option><option>Bogotá - Chapinero</option>
+          <option>Bogotá - Santa Fe</option><option>Bogotá - San Cristóbal</option>
+          <option>Bogotá - Usme</option><option>Bogotá - Kennedy</option>
+          <option>Bogotá - Bosa</option><option>Bogotá - Engativá</option>
+          <option>Bogotá - Suba</option><option>Bogotá - Barrios Unidos</option>
+          <option>Bogotá - Teusaquillo</option><option>Bogotá - Tunjuelito</option>
+          <option>Otra ciudad</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group" id="g-pass">
+          <label>Contraseña *</label>
+          <input type="password" id="r-pass" placeholder="Mínimo 6 caracteres"/>
+          <div class="field-err" id="e-pass">Mínimo 6 caracteres</div>
+        </div>
+        <div class="form-group" id="g-pass2">
+          <label>Confirmar contraseña *</label>
+          <input type="password" id="r-pass2" placeholder="Repite tu contraseña"/>
+          <div class="field-err" id="e-pass2">Las contraseñas no coinciden</div>
+        </div>
+      </div>
+      <div class="form-group" style="display:flex;align-items:flex-start;gap:10px;">
+        <input type="checkbox" id="privacidad" style="margin-top:3px;width:auto;"/>
+        <label for="privacidad" style="font-size:.83rem;color:var(--gris-texto);cursor:pointer;">
+          Acepto la <a href="#" style="color:var(--verde-vivo)">Política de Privacidad</a> y el tratamiento de mis datos según la Ley 1581/2012.
+        </label>
+      </div>
+      <button class="btn btn-primary full" onclick="registrar()">Crear mi cuenta 🌿</button>
+      <p style="text-align:center;margin-top:16px;font-size:.88rem;color:var(--gris-texto);">¿Ya tienes cuenta? <a href="../index.html#login-section" style="color:var(--verde-vivo)">Inicia sesión</a></p>
+    </div>
+
+    <div class="success-box" id="success-box">
+      <div style="font-size:3rem;margin-bottom:12px;">🌿</div>
+      <h3>¡Registro exitoso!</h3>
+      <p>Tu cuenta fue creada. Un administrador la activará pronto.<br/>Recibirás acceso una vez aprobado.</p>
+      <a href="../index.html" class="btn btn-primary">Ir al inicio</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo nav-logo"><span class="logo-leaf">🌿</span><span class="logo-text" style="color:#fff">Verdes<em>por</em>Acción</span></div>
+    <div class="footer-links">
+      <a href="../index.html">Inicio</a><a href="quienes-somos.html">Quiénes Somos</a><a href="contenido.html">Contenido</a><a href="contacto.html">Contacto</a>
+    </div>
+    <div class="footer-legal"><span>© 2025 Verdes por Acción · Proyecto Universitario</span></div>
+  </div>
+</footer>
+
+<script src="../assets/js/main.js"></script>
+<script src="../assets/js/core.js"></script>
+<script>
+  DB.init();
+
+  function toast(msg, type) {
+    const icons={ok:'✅',err:'❌',warn:'⚠️'};
+    const c=document.getElementById('toasts');
+    const el=document.createElement('div');
+    el.className='toast-n toast-'+type;
+    el.innerHTML='<span>'+(icons[type]||'💬')+'</span><span>'+msg+'</span>';
+    c.appendChild(el);
+    setTimeout(()=>{el.style.cssText='opacity:0;transition:opacity .35s';setTimeout(()=>el.remove(),380);},3400);
+  }
+
+  function registrar() {
+    let ok = true;
+    const nombre = document.getElementById('r-nombre').value.trim();
+    const email  = document.getElementById('r-email').value.trim();
+    const pass   = document.getElementById('r-pass').value;
+    const pass2  = document.getElementById('r-pass2').value;
+    const tel    = document.getElementById('r-tel').value.trim();
+    const ciudad = document.getElementById('r-ciudad').value;
+
+    // Validaciones
+    const setErr = (gId, eId, show) => {
+      document.getElementById(gId).classList.toggle('bad', show);
+      document.getElementById(eId).style.display = show ? 'block' : 'none';
+    };
+    if (!nombre) { setErr('g-nombre','e-nombre',true); ok=false; } else setErr('g-nombre','e-nombre',false);
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setErr('g-email','e-email',true); ok=false; } else setErr('g-email','e-email',false);
+    if (pass.length < 6) { setErr('g-pass','e-pass',true); ok=false; } else setErr('g-pass','e-pass',false);
+    if (pass !== pass2) { setErr('g-pass2','e-pass2',true); ok=false; } else setErr('g-pass2','e-pass2',false);
+    if (!document.getElementById('privacidad').checked) { toast('Debes aceptar la política de privacidad','warn'); ok=false; }
+    if (!ok) return;
+
+    const res = DB.regUser({ nombre, email, password: pass, telefono: tel, ciudad });
+    if (!res.ok) { toast(res.msg, 'err'); return; }
+    toast('¡Cuenta creada exitosamente!', 'ok');
+    document.getElementById('form-area').style.display = 'none';
+    document.getElementById('success-box').classList.add('show');
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Verdes por Acción · Empresa</title>
+<link rel="stylesheet" href="../assets/css/global.css">
+<style>
+.kpi-row { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1.3rem; }
+.kpi-card { background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:14px; padding:1.1rem; text-align:center; }
+.kpi-val  { font-family:'Playfair Display',serif; font-size:1.6rem; color:var(--white); }
+.kpi-lbl  { font-size:.7rem; color:var(--muted); margin-top:.2rem; }
+.kpi-sub  { font-size:.68rem; color:var(--sage); margin-top:.25rem; }
+.proy-card { background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:12px; padding:1.1rem; margin-bottom:.8rem; transition:all .2s; }
+.proy-card:hover { border-color:rgba(122,184,147,.35); }
+.proy-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:.6rem; }
+.proy-name { font-weight:600; font-size:.9rem; color:var(--white); }
+.proy-resp { font-size:.73rem; color:var(--muted); margin-top:.15rem; }
+.profile-row { display:flex; align-items:center; gap:.8rem; padding:.5rem 0; border-bottom:1px solid rgba(122,184,147,.06); }
+.profile-row .lbl { font-size:.76rem; color:var(--muted); width:140px; flex-shrink:0; }
+.profile-row .val { font-size:.83rem; color:rgba(255,255,255,.85); }
+.esg-pill { display:inline-flex; align-items:center; gap:.4rem; padding:.3rem .8rem; border-radius:20px; font-size:.78rem; font-weight:600; }
+@media(max-width:900px){ .kpi-row{grid-template-columns:1fr 1fr;} }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div id="toasts"></div>
+
+<!-- Confirm -->
+<div class="overlay hide" id="confirm-overlay">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-hdr"><h3>⚠️ Confirmar</h3><button class="modal-close" onclick="M.close('confirm-overlay')">✕</button></div>
+    <p id="c-msg" style="color:rgba(255,255,255,.8);margin-bottom:1.4rem;font-size:.9rem;line-height:1.5"></p>
+    <div style="display:flex;gap:.7rem">
+      <button class="btn btn-danger btn-full" id="c-yes">Sí, continuar</button>
+      <button class="btn btn-outline btn-full" onclick="M.close('confirm-overlay')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Proyecto -->
+<div class="overlay hide" id="m-proyecto">
+  <div class="modal">
+    <div class="modal-hdr"><h3>📁 Nuevo Proyecto</h3><button class="modal-close" onclick="M.close('m-proyecto')">✕</button></div>
+    <form id="f-proyecto">
+      <div class="field"><label>Nombre del proyecto *</label><input name="nombre" placeholder="Ej: Techo solar planta 1"></div>
+      <div class="field"><label>Responsable *</label><input name="responsable" placeholder="Nombre o cargo"></div>
+      <div class="form-row">
+        <div class="field"><label>Avance actual (%)</label><input name="avance" type="number" min="0" max="100" value="0" placeholder="0"></div>
+        <div class="field"><label>Categoría</label>
+          <select name="categoria"><option>Energía</option><option>Residuos</option><option>Agua</option><option>Biodiversidad</option><option>Movilidad</option><option>Digitalización</option><option>Otro</option></select>
+        </div>
+      </div>
+      <div class="field"><label>Descripción</label><textarea name="desc" placeholder="Objetivo y alcance del proyecto..."></textarea></div>
+      <button type="submit" class="btn btn-primary btn-full">✅ Crear proyecto</button>
+    </form>
+  </div>
+</div>
+
+<!-- Modal ESG -->
+<div class="overlay hide" id="m-esg">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-hdr"><h3>🏅 Actualizar Puntaje ESG</h3><button class="modal-close" onclick="M.close('m-esg')">✕</button></div>
+    <form id="f-esg">
+      <div class="field"><label>Componente Ambiental — E (0–100)</label><input name="esgE" type="number" min="0" max="100" placeholder="91"></div>
+      <div class="field"><label>Componente Social — S (0–100)</label><input name="esgS" type="number" min="0" max="100" placeholder="84"></div>
+      <div class="field"><label>Componente Gobernanza — G (0–100)</label><input name="esgG" type="number" min="0" max="100" placeholder="78"></div>
+      <div class="hint-box mb2">El puntaje total ESG se calcula automáticamente como el promedio ponderado de E, S y G.</div>
+      <button type="submit" class="btn btn-primary btn-full">💾 Guardar puntaje ESG</button>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Reporte -->
+<div class="overlay hide" id="m-reporte">
+  <div class="modal">
+    <div class="modal-hdr"><h3>📤 Subir Evidencia / Reporte</h3><button class="modal-close" onclick="M.close('m-reporte')">✕</button></div>
+    <form id="f-reporte" onsubmit="submitReporte(event)">
+      <div class="field"><label>Tipo de reporte</label>
+        <select name="tipo"><option>Informe de sostenibilidad</option><option>Certificación ambiental</option><option>Auditoría de residuos</option><option>Reporte de huella de carbono</option><option>Plan de acción climática</option><option>Otro</option></select>
+      </div>
+      <div class="field"><label>Año del reporte</label><input name="anio" type="number" min="2020" max="2030" value="2025"></div>
+      <div class="field"><label>Descripción</label><textarea name="desc" placeholder="Breve descripción del contenido..."></textarea></div>
+      <div class="field"><label>URL del documento (opcional)</label><input name="url" type="url" placeholder="https://..."></div>
+      <button type="submit" class="btn btn-primary btn-full">📤 Registrar reporte</button>
+    </form>
+  </div>
+</div>
+
+<button class="mob-tog" data-sb="sb-e" data-sb-ov="sb-e-ov">☰</button>
+<div class="sb-overlay" id="sb-e-ov"></div>
+
+<div class="layout">
+  <aside class="sidebar" id="sb-e">
+    <div class="sb-logo">
+      <span class="ico">🌿</span>
+      <div class="nm">Verdes por Acción <small>Portal Empresa</small></div>
+    </div>
+    <div class="sb-sec">
+      <div class="sb-sec-title">Gestión</div>
+      <div class="nav-item on" data-g="e" data-t="e-home"><span class="ni">📊</span> Dashboard</div>
+      <div class="nav-item"    data-g="e" data-t="e-proyectos"><span class="ni">📁</span> Proyectos</div>
+      <div class="nav-item"    data-g="e" data-t="e-esg"><span class="ni">🏅</span> Reporte ESG</div>
+      <div class="nav-item"    data-g="e" data-t="e-reportes"><span class="ni">📤</span> Evidencias</div>
+    </div>
+    <div class="sb-sec">
+      <div class="sb-sec-title">Empresa</div>
+      <div class="nav-item" data-g="e" data-t="e-colaboradores"><span class="ni">👥</span> Colaboradores</div>
+      <div class="nav-item" data-g="e" data-t="e-perfil"><span class="ni">🏢</span> Perfil Empresa</div>
+    </div>
+    <div class="sb-foot">
+      <div class="user-chip">
+        <div class="ava blue-av" id="e-av">EC</div>
+        <div>
+          <div class="chip-name" id="e-cn">Empresa</div>
+          <div class="chip-role">Cuenta Corporativa</div>
+        </div>
+        <button class="logout-btn" onclick="logout()">⏻</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- HOME -->
+    <div class="tab-panel on" id="tp-e-home">
+      <div class="pg-hdr">
+        <h1 id="e-title">Dashboard Corporativo 🏢</h1>
+        <p>Informe de sostenibilidad empresarial</p>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-icon">🌫️</div><div class="stat-val">-34%</div><div class="stat-lbl">Reducción CO₂</div><div class="stat-sub">Meta: -40% para dic.</div></div>
+        <div class="stat-card"><div class="stat-icon">⚡</div><div class="stat-val">38%</div><div class="stat-lbl">Energía renovable</div><div class="stat-sub">↑ 12% vs año anterior</div></div>
+        <div class="stat-card"><div class="stat-icon">🏅</div><div class="stat-val" id="e-esg-val">0</div><div class="stat-lbl">Puntaje ESG / 100</div><div class="stat-sub" id="e-esg-cert">Sin certificación</div></div>
+        <div class="stat-card"><div class="stat-icon">🌳</div><div class="stat-val">850</div><div class="stat-lbl">Árboles patrocinados</div><div class="stat-sub">↑ 120 este trimestre</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">
+            📊 Indicadores ESG
+            <button class="btn btn-sm btn-warn" onclick="M.open('m-esg')">Actualizar</button>
+          </div>
+          <div class="prog-item"><div class="prog-lbl"><span>Ambiental (E)</span><span id="e-bar-E-lbl">0%</span></div><div class="prog-bar"><div class="prog-fill" id="e-bar-E" data-w="0%" style="width:0"></div></div></div>
+          <div class="prog-item"><div class="prog-lbl"><span>Social (S)</span><span id="e-bar-S-lbl">0%</span></div><div class="prog-bar"><div class="prog-fill" id="e-bar-S" data-w="0%" style="width:0"></div></div></div>
+          <div class="prog-item"><div class="prog-lbl"><span>Gobernanza (G)</span><span id="e-bar-G-lbl">0%</span></div><div class="prog-bar"><div class="prog-fill" id="e-bar-G" data-w="0%" style="width:0"></div></div></div>
+          <div class="prog-item"><div class="prog-lbl"><span>Reducción CO₂</span><span>34%</span></div><div class="prog-bar"><div class="prog-fill" data-w="34%" style="width:0"></div></div></div>
+          <div class="prog-item"><div class="prog-lbl"><span>Agua reciclada</span><span>62%</span></div><div class="prog-bar"><div class="prog-fill" data-w="62%" style="width:0"></div></div></div>
+        </div>
+        <div>
+          <div class="card mb2">
+            <div class="card-title">🎯 Metas 2025</div>
+            <ul class="act-list">
+              <li class="act-item"><div class="act-dot gold"></div><div><div class="act-text">-40% emisiones CO₂ <span class="badge b-yellow">En progreso</span></div></div></li>
+              <li class="act-item"><div class="act-dot"></div><div><div class="act-text">50% energía renovable <span class="badge b-yellow">38%</span></div></div></li>
+              <li class="act-item"><div class="act-dot gold"></div><div><div class="act-text">Cero papel en oficinas <span class="badge b-green">✓</span></div></div></li>
+              <li class="act-item"><div class="act-dot"></div><div><div class="act-text">ISO 14001 <span class="badge b-blue">En proceso</span></div></div></li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="card-title">📋 Actividad reciente</div>
+            <ul class="act-list" id="e-activity">
+              <li class="act-item"><div class="act-dot"></div><div><div class="act-text">ESG actualizado a 87/100</div><div class="act-time">hace 2 días</div></div></li>
+              <li class="act-item"><div class="act-dot gold"></div><div><div class="act-text">Proyecto "Jardín Corporativo" completado</div><div class="act-time">hace 1 semana</div></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROYECTOS -->
+    <div class="tab-panel" id="tp-e-proyectos">
+      <div class="pg-hdr">
+        <h1>📁 Proyectos Ambientales</h1>
+        <p>Gestiona y monitorea tus iniciativas de sostenibilidad</p>
+      </div>
+      <div class="card">
+        <div class="card-title">
+          Proyectos registrados
+          <button class="btn btn-sm btn-primary" onclick="M.open('m-proyecto')">+ Nuevo proyecto</button>
+        </div>
+        <div id="proy-list"></div>
+      </div>
+    </div>
+
+    <!-- ESG -->
+    <div class="tab-panel" id="tp-e-esg">
+      <div class="pg-hdr">
+        <h1>🏅 Reporte ESG</h1>
+        <p>Environmental · Social · Governance</p>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">
+            Puntaje global ESG
+            <button class="btn btn-sm btn-warn" onclick="M.open('m-esg')">✏️ Actualizar</button>
+          </div>
+          <div class="score-ring" id="esg-ring-main"><div class="sval" id="esg-ring-val">0</div><div class="slbl">/ 100</div></div>
+          <div style="text-align:center;margin-bottom:1.2rem">
+            <span class="esg-pill" id="esg-pill" style="background:rgba(122,184,147,.15);color:var(--sage);border:1px solid rgba(122,184,147,.3)">Sin calificación</span>
+          </div>
+          <div class="prog-item"><div class="prog-lbl"><span>🌿 Ambiental (E)</span><span id="esg-e-v">0%</span></div><div class="prog-bar"><div class="prog-fill" id="esg-e-bar" data-w="0%" style="width:0"></div></div></div>
+          <div class="prog-item"><div class="prog-lbl"><span>🤝 Social (S)</span><span id="esg-s-v">0%</span></div><div class="prog-bar"><div class="prog-fill" id="esg-s-bar" data-w="0%" style="width:0"></div></div></div>
+          <div class="prog-item"><div class="prog-lbl"><span>⚖️ Gobernanza (G)</span><span id="esg-g-v">0%</span></div><div class="prog-bar"><div class="prog-fill" id="esg-g-bar" data-w="0%" style="width:0"></div></div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">📋 Criterios evaluados</div>
+          <ul style="list-style:none">
+            <li style="padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.84rem;color:rgba(255,255,255,.8)">✅ Gestión de residuos y reciclaje</li>
+            <li style="padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.84rem;color:rgba(255,255,255,.8)">✅ Huella de carbono medida</li>
+            <li style="padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.84rem;color:rgba(255,255,255,.8)">✅ Uso de energías limpias</li>
+            <li style="padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.84rem;color:rgba(255,255,255,.8)">⏳ Cadena de suministro sostenible</li>
+            <li style="padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.84rem;color:rgba(255,255,255,.8)">⏳ Diversidad e inclusión laboral</li>
+            <li style="padding:.5rem 0;font-size:.84rem;color:rgba(255,255,255,.8)">❌ Reporte integrado GRI pendiente</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- EVIDENCIAS -->
+    <div class="tab-panel" id="tp-e-reportes">
+      <div class="pg-hdr">
+        <h1>📤 Evidencias y Reportes</h1>
+        <p>Documenta y sube tus reportes de sostenibilidad</p>
+      </div>
+      <div class="card">
+        <div class="card-title">
+          Reportes registrados
+          <button class="btn btn-sm btn-primary" onclick="M.open('m-reporte')">+ Subir evidencia</button>
+        </div>
+        <ul class="act-list" id="reportes-list">
+          <li class="act-item"><div class="act-dot gold"></div><div><div class="act-text"><strong>Informe de sostenibilidad 2024</strong> — Año 2024 <span class="badge b-green">Registrado</span></div><div class="act-time">Subido hace 2 meses</div></div></li>
+          <li class="act-item"><div class="act-dot"></div><div><div class="act-text"><strong>Auditoría de residuos Q1</strong> — Año 2025 <span class="badge b-blue">En revisión</span></div><div class="act-time">Subido hace 1 semana</div></div></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- COLABORADORES -->
+    <div class="tab-panel" id="tp-e-colaboradores">
+      <div class="pg-hdr">
+        <h1>👥 Colaboradores</h1>
+        <p>Equipo comprometido con la sostenibilidad</p>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-icon">👨‍💼</div><div class="stat-val">240</div><div class="stat-lbl">Colaboradores totales</div><div class="stat-sub">85% participación verde</div></div>
+        <div class="stat-card"><div class="stat-icon">🎓</div><div class="stat-val">18</div><div class="stat-lbl">Capacitaciones ESG</div><div class="stat-sub">Este año</div></div>
+        <div class="stat-card"><div class="stat-icon">🌿</div><div class="stat-val">204</div><div class="stat-lbl">Activos en plataforma</div><div class="stat-sub">85% del equipo</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🏆 Top colaboradores verdes</div>
+        <table><thead><tr><th>#</th><th>Colaborador</th><th>Área</th><th>Acciones</th><th>Puntos</th></tr></thead>
+        <tbody>
+          <tr><td>🥇</td><td>Ana Martínez</td><td>Ambiental</td><td>48</td><td><span class="badge b-green">1,240 pts</span></td></tr>
+          <tr><td>🥈</td><td>Jorge Ramírez</td><td>Producción</td><td>37</td><td><span class="badge b-green">980 pts</span></td></tr>
+          <tr><td>🥉</td><td>Sandra López</td><td>Admón.</td><td>29</td><td><span class="badge b-yellow">720 pts</span></td></tr>
+          <tr><td>4</td><td>Luis Herrera</td><td>TI</td><td>21</td><td><span class="badge b-yellow">540 pts</span></td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <!-- PERFIL -->
+    <div class="tab-panel" id="tp-e-perfil">
+      <div class="pg-hdr">
+        <h1>🏢 Perfil de Empresa</h1>
+        <p>Información corporativa registrada</p>
+      </div>
+      <div class="grid-2-equal">
+        <div class="card">
+          <div class="card-title">Datos corporativos</div>
+          <div class="profile-row"><div class="lbl">Razón Social</div><div class="val" id="ep-rs">-</div></div>
+          <div class="profile-row"><div class="lbl">NIT</div><div class="val" id="ep-nit">-</div></div>
+          <div class="profile-row"><div class="lbl">Correo</div><div class="val" id="ep-email">-</div></div>
+          <div class="profile-row"><div class="lbl">Sector</div><div class="val" id="ep-sector">-</div></div>
+          <div class="profile-row"><div class="lbl">Ciudad</div><div class="val" id="ep-ciudad">-</div></div>
+          <div class="profile-row"><div class="lbl">Teléfono</div><div class="val" id="ep-tel">-</div></div>
+          <div class="profile-row"><div class="lbl">Sitio web</div><div class="val" id="ep-web">-</div></div>
+          <div class="profile-row"><div class="lbl">Registro</div><div class="val" id="ep-fecha">-</div></div>
+          <div class="profile-row"><div class="lbl">Estado</div><div class="val"><span class="badge b-green">✓ Activo</span></div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">📊 Resumen de impacto</div>
+          <div class="score-ring"><div class="sval" id="ep-esg">0</div><div class="slbl">ESG score</div></div>
+          <div class="kpi-row mt2">
+            <div class="kpi-card"><div class="kpi-val" id="ep-proyectos">0</div><div class="kpi-lbl">Proyectos</div></div>
+            <div class="kpi-card"><div class="kpi-val">850</div><div class="kpi-lbl">Árboles</div></div>
+            <div class="kpi-card"><div class="kpi-val">-34%</div><div class="kpi-lbl">CO₂</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="../assets/js/core.js"></script>
+<script>
+DB.init(); initMobile(); initNav('e');
+
+const sess=DB.sess();
+if(!sess||sess.role!=='empresa'){ window.location='../index.html'; }
+
+function getEmp(){ return DB.empresas().find(x=>x.id===sess.id)||sess; }
+
+function fill(){
+  const emp=getEmp();
+  document.getElementById('e-av').textContent    = initials(emp.razonSocial);
+  document.getElementById('e-cn').textContent    = emp.razonSocial;
+  document.getElementById('e-title').textContent = emp.razonSocial+' 🏢';
+  document.getElementById('e-esg-val').textContent = emp.esgScore||0;
+  document.getElementById('ep-rs').textContent   = emp.razonSocial;
+  document.getElementById('ep-nit').textContent  = emp.nit;
+  document.getElementById('ep-email').textContent= emp.email;
+  document.getElementById('ep-sector').textContent=emp.sector||'-';
+  document.getElementById('ep-ciudad').textContent=emp.ciudad||'-';
+  document.getElementById('ep-tel').textContent  = emp.telefono||'-';
+  document.getElementById('ep-web').textContent  = emp.website||'-';
+  document.getElementById('ep-fecha').textContent= fmtDate(emp.createdAt);
+  document.getElementById('ep-esg').textContent  = emp.esgScore||0;
+  document.getElementById('ep-proyectos').textContent=(emp.proyectos||[]).length;
+  // ESG bars
+  const E=emp.esgE||0, S=emp.esgS||0, G=emp.esgG||0;
+  ['E','S','G'].forEach(k=>{
+    const v=k==='E'?E:k==='S'?S:G;
+    const bar=document.getElementById('e-bar-'+k); if(bar){bar.dataset.w=v+'%';}
+    const lbl=document.getElementById('e-bar-'+k+'-lbl'); if(lbl)lbl.textContent=v+'%';
+    const b2=document.getElementById('esg-'+k.toLowerCase()+'-bar'); if(b2)b2.dataset.w=v+'%';
+    const l2=document.getElementById('esg-'+k.toLowerCase()+'-v'); if(l2)l2.textContent=v+'%';
+  });
+  document.getElementById('esg-ring-val').textContent=emp.esgScore||0;
+  const cert=emp.esgScore>=90?'Platino ⭐':emp.esgScore>=75?'Gold 🥇':emp.esgScore>=50?'Silver 🥈':emp.esgScore>0?'Bronze 🥉':'Sin calificación';
+  document.getElementById('e-esg-cert').textContent=cert;
+  const pill=document.getElementById('esg-pill'); if(pill)pill.textContent=cert;
+  renderProyectos(emp);
+  animProg();
+}
+
+function renderProyectos(emp){
+  const c=document.getElementById('proy-list'); if(!c)return;
+  const ps=emp.proyectos||[];
+  if(!ps.length){ c.innerHTML='<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.88rem">Sin proyectos registrados. ¡Agrega el primero!</div>'; return; }
+  c.innerHTML=ps.map((p,i)=>`
+    <div class="proy-card">
+      <div class="proy-top">
+        <div>
+          <div class="proy-name">${esc(p.nombre)}</div>
+          <div class="proy-resp">👤 ${esc(p.responsable)} · 🏷️ ${esc(p.categoria||'General')}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.6rem">
+          <span class="badge ${p.avance>=100?'b-green':p.avance>0?'b-yellow':'b-red'}">${p.avance>=100?'Completado':p.avance>0?'En ejecución':'Planificación'}</span>
+          <button class="btn btn-sm btn-danger" onclick="delProy(${i})">🗑</button>
+        </div>
+      </div>
+      <div class="prog-item" style="margin:0">
+        <div class="prog-lbl"><span style="font-size:.75rem">Avance</span><span>${p.avance}%</span></div>
+        <div class="prog-bar"><div class="prog-fill" data-w="${p.avance}%" style="width:0"></div></div>
+      </div>
+      ${p.desc?`<div style="font-size:.75rem;color:var(--muted);margin-top:.5rem">${esc(p.desc)}</div>`:''}
+    </div>`).join('');
+  animProg();
+}
+
+window.delProy=function(i){
+  M.confirm('¿Eliminar este proyecto?',()=>{
+    const emp=getEmp(); const ps=[...(emp.proyectos||[])]; ps.splice(i,1);
+    DB.updEmp(sess.id,{proyectos:ps}); DB.log('Proyecto eliminado','empresa');
+    T.info('Proyecto eliminado.'); fill();
+  });
+};
+
+document.getElementById('f-proyecto').onsubmit=e=>{
+  e.preventDefault(); const fm=e.target;
+  const nombre=fm.nombre.value.trim(), resp=fm.responsable.value.trim();
+  if(!nombre||!resp) return T.warn('Completa los campos requeridos.');
+  const emp=getEmp(); const ps=[...(emp.proyectos||[])];
+  ps.push({ id:'p-'+Date.now(), nombre, responsable:resp, avance:parseInt(fm.avance.value)||0, categoria:fm.categoria.value, desc:fm.desc.value.trim(), createdAt:now() });
+  DB.updEmp(sess.id,{proyectos:ps}); DB.log('Proyecto creado: '+nombre,'empresa');
+  T.ok('Proyecto creado: '+nombre); fm.reset(); M.close('m-proyecto'); fill();
+};
+
+document.getElementById('f-esg').onsubmit=e=>{
+  e.preventDefault(); const fm=e.target;
+  const E=Math.min(100,parseInt(fm.esgE.value)||0);
+  const S=Math.min(100,parseInt(fm.esgS.value)||0);
+  const G=Math.min(100,parseInt(fm.esgG.value)||0);
+  const total=Math.round((E+S+G)/3);
+  DB.updEmp(sess.id,{esgScore:total,esgE:E,esgS:S,esgG:G});
+  DB.log(`ESG actualizado: ${total}/100 (${sess.razonSocial})`,'empresa');
+  T.ok(`Puntaje ESG actualizado: ${total}/100`); M.close('m-esg'); fill();
+};
+
+window.submitReporte=function(e){
+  e.preventDefault(); const fm=e.target;
+  const tipo=fm.tipo.value, anio=fm.anio.value;
+  const list=document.getElementById('reportes-list');
+  const li=document.createElement('li'); li.className='act-item';
+  li.innerHTML=`<div class="act-dot gold"></div><div><div class="act-text"><strong>${esc(tipo)} ${esc(anio)}</strong> <span class="badge b-green">Registrado</span></div><div class="act-time">hace un momento</div></div>`;
+  list.prepend(li);
+  DB.log(`Reporte subido: ${tipo} ${anio}`,'empresa');
+  T.ok('Evidencia registrada exitosamente.'); fm.reset(); M.close('m-reporte');
+};
+
+function logout(){ DB.clearSess(); window.location='../index.html'; }
+
+fill();
+</script>
+</body>
+</html>

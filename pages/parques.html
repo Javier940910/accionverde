@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Parques — Verdes por Acción</title>
+<link rel="stylesheet" href="../assets/css/pages.css"/>
+<style>
+/* SEARCH + FILTER */
+.search-filter{max-width:1050px;margin:0 auto 2.5rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;}
+.search-box{flex:1;min-width:220px;position:relative;}
+.search-box input{width:100%;padding:.72rem 1rem .72rem 2.8rem;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;color:var(--white);font-family:'Outfit',sans-serif;font-size:.85rem;outline:none;transition:all .22s;}
+.search-box input:focus{border-color:var(--border2);background:rgba(109,191,138,.06);}
+.search-box input::placeholder{color:rgba(255,255,255,.2);}
+.search-box::before{content:'🔍';position:absolute;left:.9rem;top:50%;transform:translateY(-50%);font-size:.85rem;pointer-events:none;}
+.filter-sel{padding:.7rem 1rem;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;color:rgba(168,219,184,.65);font-family:'Outfit',sans-serif;font-size:.82rem;outline:none;cursor:pointer;transition:border-color .2s;appearance:none;padding-right:1.8rem;}
+.filter-sel:focus{border-color:var(--border2);}
+.filter-sel option{background:#0a1f10;color:var(--white);}
+
+/* STATS ROW */
+.parks-stats{max-width:1050px;margin:0 auto 2rem;display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;}
+.ps-card{background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:1rem;text-align:center;transition:all .2s;}
+.ps-card:hover{border-color:var(--border2);}
+.ps-num{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;color:var(--white);display:block;line-height:1;}
+.ps-lbl{font-size:.65rem;color:rgba(168,219,184,.45);text-transform:uppercase;letter-spacing:1.2px;margin-top:.25rem;display:block;}
+
+/* PARKS GRID */
+.parks-grid{max-width:1050px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;}
+.park-card{background:var(--glass);border:1px solid var(--border);border-radius:20px;overflow:hidden;cursor:pointer;transition:all .28s cubic-bezier(.34,1.56,.64,1);}
+.park-card:hover{border-color:var(--border2);transform:translateY(-8px);box-shadow:0 24px 60px rgba(0,0,0,.35);}
+.park-thumb{height:140px;display:flex;align-items:center;justify-content:center;font-size:3.5rem;position:relative;}
+.park-thumb.activo{background:linear-gradient(135deg,rgba(30,92,52,.55),rgba(10,31,16,.7));}
+.park-thumb.mantenimiento{background:linear-gradient(135deg,rgba(100,75,0,.45),rgba(50,35,0,.7));}
+.park-thumb.inactivo{background:linear-gradient(135deg,rgba(100,20,20,.45),rgba(50,5,5,.7));}
+.park-thumb.construccion{background:linear-gradient(135deg,rgba(20,50,100,.45),rgba(5,20,50,.7));}
+.park-status{position:absolute;top:.7rem;right:.7rem;padding:.2rem .65rem;border-radius:100px;font-size:.62rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;}
+.status-activo{background:rgba(39,174,96,.2);border:1px solid rgba(39,174,96,.35);color:#6fdfa0;}
+.status-mantenimiento{background:rgba(212,168,67,.2);border:1px solid rgba(212,168,67,.35);color:#d4a843;}
+.status-inactivo{background:rgba(231,76,60,.2);border:1px solid rgba(231,76,60,.35);color:#f1948a;}
+.status-construccion{background:rgba(41,128,185,.2);border:1px solid rgba(41,128,185,.35);color:#85c1e9;}
+.park-body{padding:1.2rem 1.1rem;}
+.park-name{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--white);font-weight:700;margin-bottom:.25rem;}
+.park-loc{font-size:.72rem;color:rgba(168,219,184,.45);text-transform:uppercase;letter-spacing:1px;margin-bottom:.6rem;}
+.park-desc{font-size:.78rem;color:rgba(168,219,184,.5);line-height:1.6;margin-bottom:.9rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.park-footer{display:flex;align-items:center;justify-content:space-between;}
+.park-meta{display:flex;gap:.5rem;flex-wrap:wrap;}
+.pmeta-tag{font-size:.65rem;padding:.2rem .6rem;border-radius:6px;background:rgba(109,191,138,.07);border:1px solid var(--border);color:rgba(168,219,184,.5);}
+.park-area{font-size:.7rem;color:rgba(168,219,184,.38);}
+
+/* LOCALIDADES STRIP */
+.loc-strip{background:rgba(5,15,8,.45);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.loc-grid{max-width:1050px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;}
+.loc-card{background:var(--glass);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1rem;text-align:center;transition:all .25s;}
+.loc-card:hover{border-color:var(--border2);transform:translateY(-4px);background:rgba(58,140,87,.07);}
+.loc-ico{font-size:1.6rem;display:block;margin-bottom:.5rem;}
+.loc-name{font-weight:600;font-size:.86rem;color:var(--white);margin-bottom:.2rem;}
+.loc-info{font-size:.7rem;color:rgba(168,219,184,.4);}
+.loc-badge{display:inline-block;margin-top:.35rem;padding:.15rem .55rem;border-radius:100px;font-size:.63rem;background:rgba(109,191,138,.1);border:1px solid rgba(109,191,138,.2);color:var(--mint);}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:1rem;}
+.modal-overlay.open{display:flex;animation:fadeIn .2s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal-box{background:rgba(8,22,12,.97);border:1px solid var(--border2);border-radius:24px;width:100%;max-width:520px;overflow:hidden;animation:slideUp .25s ease;}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.modal-thumb{height:160px;display:flex;align-items:center;justify-content:center;font-size:4rem;position:relative;}
+.modal-close{position:absolute;top:.8rem;right:.8rem;background:rgba(255,255,255,.08);border:1px solid var(--border);color:var(--mist);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;transition:all .2s;}
+.modal-close:hover{background:rgba(231,76,60,.15);border-color:rgba(231,76,60,.3);color:#f1948a;}
+.modal-body{padding:1.8rem 2rem;}
+.modal-body h2{font-family:'Cormorant Garamond',serif;font-size:1.6rem;color:var(--white);font-weight:700;margin-bottom:.3rem;}
+.modal-localidad{font-size:.72rem;color:var(--mint);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:1rem;}
+.modal-desc{font-size:.85rem;color:rgba(168,219,184,.6);line-height:1.75;margin-bottom:1.2rem;}
+.modal-tags{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.4rem;}
+.modal-tag{padding:.25rem .75rem;border-radius:8px;background:rgba(109,191,138,.08);border:1px solid var(--border);font-size:.7rem;color:rgba(168,219,184,.6);}
+.modal-actions{display:flex;gap:.7rem;}
+.modal-actions .btn-primary{flex:1;text-align:center;}
+.modal-actions .btn-ghost{flex:1;text-align:center;}
+
+.empty-state{display:none;text-align:center;padding:4rem 2rem;color:rgba(168,219,184,.35);font-size:.9rem;}
+.empty-state span{display:block;font-size:3rem;margin-bottom:1rem;}
+
+@media(max-width:900px){
+  .parks-grid,.loc-grid{grid-template-columns:1fr 1fr;}
+  .parks-stats{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:580px){.parks-grid{grid-template-columns:1fr;}.loc-grid{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="orb-layer"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div><div class="orb orb4"></div></div>
+<div class="leaf-layer" id="leaf-layer"></div>
+<div class="grid-overlay"></div>
+<div id="toasts"></div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal-box" id="modal-box">
+    <div class="modal-thumb" id="m-thumb">
+      <button class="modal-close" onclick="closeModalBtn()">✕</button>
+    </div>
+    <div class="modal-body">
+      <h2 id="m-name"></h2>
+      <div class="modal-localidad" id="m-loc"></div>
+      <p class="modal-desc" id="m-desc"></p>
+      <div class="modal-tags" id="m-tags"></div>
+      <div class="modal-actions">
+        <a href="../index.html#login-section" class="btn-primary">Unirme a voluntariado →</a>
+        <button class="btn-ghost" onclick="closeModalBtn()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<nav class="navbar" id="navbar">
+  <a class="nav-logo" href="../index.html"><div class="logo-mark">🌿</div><span class="logo-text">Verdes<em>por</em>Acción</span></a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="../index.html">Inicio</a></li>
+    <li><a href="quienes-somos.html">Quiénes Somos</a></li>
+    <li><a href="mision-vision.html">Misión &amp; Visión</a></li>
+    <li><a href="parques.html" class="active">Parques</a></li>
+    <li><a href="contenido.html">Contenido</a></li>
+    <li><a href="contacto.html">Contacto</a></li>
+  </ul>
+  <button class="nav-toggle" onclick="toggleNav()">☰</button>
+</nav>
+
+<section class="page-hero">
+  <div class="hero-eyebrow"><div class="dot"></div>🌳 Espacios verdes</div>
+  <h1>Parques de <em>Bogotá</em></h1>
+  <p>Explora, reporta y cuida los parques de tu localidad. Cada espacio verde merece atención y amor comunitario.</p>
+  <div class="page-scroll-hint">
+    <div class="scroll-wheel"></div>
+    <span>Explorar</span>
+  </div>
+</section>
+
+<section class="page-section">
+  <!-- STATS -->
+  <div class="parks-stats reveal">
+    <div class="ps-card"><span class="ps-num" id="s-total">0</span><span class="ps-lbl">Parques registrados</span></div>
+    <div class="ps-card"><span class="ps-num" id="s-activos">0</span><span class="ps-lbl">Activos</span></div>
+    <div class="ps-card"><span class="ps-num" id="s-mant">0</span><span class="ps-lbl">En mantenimiento</span></div>
+    <div class="ps-card"><span class="ps-num" id="s-locs">0</span><span class="ps-lbl">Localidades</span></div>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="search-filter reveal">
+    <div class="search-box"><input type="text" id="search" placeholder="Buscar parque o localidad..." oninput="renderParques()"/></div>
+    <select class="filter-sel" id="f-estado" onchange="renderParques()">
+      <option value="">Todos los estados</option>
+      <option value="activo">✅ Activos</option>
+      <option value="mantenimiento">🔧 En mantenimiento</option>
+      <option value="inactivo">❌ Inactivos</option>
+      <option value="construccion">🏗️ En construcción</option>
+    </select>
+    <select class="filter-sel" id="f-tipo" onchange="renderParques()">
+      <option value="">Todos los tipos</option>
+      <option value="Metropolitano">Metropolitano</option>
+      <option value="Zonal">Zonal</option>
+      <option value="Vecinal">Vecinal</option>
+    </select>
+  </div>
+
+  <!-- GRID -->
+  <div class="parks-grid" id="parks-grid"></div>
+  <div class="empty-state" id="empty"><span>🌿</span>No se encontraron parques con ese criterio.</div>
+</section>
+
+<!-- LOCALIDADES -->
+<section class="page-section loc-strip">
+  <div class="section-center reveal" style="margin-bottom:2.5rem;">
+    <div class="section-label center">Cobertura</div>
+    <h2 class="section-title">Localidades <em>cubiertas</em></h2>
+  </div>
+  <div class="loc-grid" id="loc-grid"></div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo"><div class="logo-mark">🌿</div><span>Verdes<em>por</em>Acción</span></div>
+    <div class="footer-links"><a href="../index.html">Inicio</a><a href="quienes-somos.html">Quiénes Somos</a><a href="mision-vision.html">Misión &amp; Visión</a><a href="contenido.html">Contenido</a><a href="contacto.html">Contacto</a></div>
+    <div class="footer-legal">© 2025 Verdes por Acción · Proyecto Universitario</div>
+  </div>
+</footer>
+
+<script src="../assets/js/db.js"></script>
+<script src="../assets/js/core.js"></script>
+<script src="../assets/js/pages-bg.js"></script>
+<script>
+DB.init();
+const PARQUES = DB.getParques();
+const UBICACIONES = DB.getUbicaciones();
+
+// Stats
+function updateStats(){
+  const p=PARQUES;
+  document.getElementById('s-total').textContent=p.length;
+  document.getElementById('s-activos').textContent=p.filter(x=>x.estado==='activo').length;
+  document.getElementById('s-mant').textContent=p.filter(x=>x.estado==='mantenimiento').length;
+  document.getElementById('s-locs').textContent=[...new Set(p.map(x=>x.localidad))].length;
+}
+updateStats();
+
+// Status helpers
+function statusClass(s){return 'status-'+s;}
+function statusLabel(s){const m={activo:'Activo',mantenimiento:'Mantenimiento',inactivo:'Inactivo',construccion:'Construcción'};return m[s]||s;}
+function thumbClass(s){return 'park-thumb '+s;}
+
+// Render parques
+function renderParques(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const fe=document.getElementById('f-estado').value;
+  const ft=document.getElementById('f-tipo').value;
+  const grid=document.getElementById('parks-grid');
+  const empty=document.getElementById('empty');
+
+  const filtered=PARQUES.filter(p=>{
+    const matchQ=!q||(p.nombre+p.localidad+p.descripcion).toLowerCase().includes(q);
+    const matchE=!fe||p.estado===fe;
+    const matchT=!ft||p.tipo===ft;
+    return matchQ&&matchE&&matchT;
+  });
+
+  grid.innerHTML='';
+  if(!filtered.length){empty.style.display='block';return;}
+  empty.style.display='none';
+
+  filtered.forEach((p,i)=>{
+    const card=document.createElement('div');
+    card.className='park-card reveal';
+    card.style.animationDelay=i*.05+'s';
+    card.innerHTML=`
+      <div class="${thumbClass(p.estado)}">
+        ${p.emoji||'🌳'}
+        <span class="park-status ${statusClass(p.estado)}">${statusLabel(p.estado)}</span>
+      </div>
+      <div class="park-body">
+        <div class="park-name">${p.nombre}</div>
+        <div class="park-loc">📍 ${p.localidad}</div>
+        <p class="park-desc">${p.descripcion||''}</p>
+        <div class="park-footer">
+          <div class="park-meta">
+            <span class="pmeta-tag">${p.tipo||'Parque'}</span>
+            ${p.empresa?`<span class="pmeta-tag">${p.empresa}</span>`:''}
+          </div>
+          <span class="park-area">${p.area?p.area+' ha':''}</span>
+        </div>
+      </div>`;
+    card.onclick=()=>openModal(p);
+    grid.appendChild(card);
+  });
+
+  // Re-trigger reveal
+  setTimeout(()=>{
+    const obs=new IntersectionObserver(entries=>{
+      entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});
+    },{threshold:.08});
+    document.querySelectorAll('#parks-grid .reveal:not(.visible)').forEach(el=>obs.observe(el));
+  },50);
+}
+
+// Render localidades
+function renderLocs(){
+  const grid=document.getElementById('loc-grid');
+  const icons=['🌿','🌳','🌲','🍀','🌱','🌾','🍃','🌻'];
+  UBICACIONES.slice(0,8).forEach((loc,i)=>{
+    const c=document.createElement('div');
+    c.className='loc-card reveal reveal-d'+(i%4+1);
+    c.innerHTML=`
+      <span class="loc-ico">${icons[i%icons.length]}</span>
+      <div class="loc-name">${loc.nombre}</div>
+      <div class="loc-info">${loc.area||'–'} km²</div>
+      <span class="loc-badge">${loc.parques||'–'} parques</span>`;
+    grid.appendChild(c);
+  });
+}
+
+// Modal
+function openModal(p){
+  document.getElementById('m-name').textContent=p.nombre;
+  document.getElementById('m-loc').textContent='📍 '+p.localidad+(p.barrio?' · '+p.barrio:'');
+  document.getElementById('m-desc').textContent=p.descripcion||'Sin descripción disponible.';
+  const thumb=document.getElementById('m-thumb');
+  thumb.className='modal-thumb park-thumb '+p.estado;
+  thumb.querySelector('.modal-close').outerHTML; // preserve close btn
+  thumb.innerHTML=`<span style="font-size:4rem">${p.emoji||'🌳'}</span><button class="modal-close" onclick="closeModalBtn()">✕</button>`;
+  const tags=document.getElementById('m-tags');
+  tags.innerHTML=[
+    p.tipo&&`<span class="modal-tag">🏷️ ${p.tipo}</span>`,
+    p.empresa&&`<span class="modal-tag">🏢 ${p.empresa}</span>`,
+    p.area&&`<span class="modal-tag">📐 ${p.area} ha</span>`,
+    `<span class="modal-tag ${statusClass(p.estado)} modal-tag">${statusLabel(p.estado)}</span>`
+  ].filter(Boolean).join('');
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal(e){if(e.target===document.getElementById('modal'))closeModalBtn();}
+function closeModalBtn(){document.getElementById('modal').classList.remove('open');document.body.style.overflow='';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModalBtn();});
+
+renderParques();
+renderLocs();
+</script>
+</body>
+</html>
