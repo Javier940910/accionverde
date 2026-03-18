@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión — Áreas Verdes</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;">
+
+<div class="form-card" style="max-width:420px;width:100%;">
+    <h1 style="font-family:'Fraunces',serif;color:var(--green-900);font-size:26px;margin-bottom:4px;">🌿 Áreas Verdes</h1>
+    <p style="color:var(--text-muted);font-size:14px;margin-bottom:24px;">Inicia sesión para continuar</p>
+
+    <div id="alert" class="alert" style="display:none;"></div>
+
+    <form id="loginForm">
+        <div class="form-group">
+            <label>Correo electrónico</label>
+            <input type="email" id="correo" class="form-control" placeholder="correo@ejemplo.com" required autofocus>
+        </div>
+        <div class="form-group">
+            <label>Contraseña</label>
+            <input type="password" id="password" class="form-control" placeholder="Tu contraseña" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" id="btnLogin">Entrar</button>
+    </form>
+
+    <p style="text-align:center;margin-top:16px;font-size:13px;color:var(--text-muted);">
+        ¿No tienes cuenta? <a href="register.html" style="color:var(--green-700);font-weight:600;">Regístrate aquí</a>
+    </p>
+</div>
+
+<script src="assets/js/api.js"></script>
+<script>
+    // Si ya está logueado, redirigir
+    if (isLoggedIn()) window.location.href = "dashboard.html";
+
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const btn   = document.getElementById("btnLogin");
+        const alert = document.getElementById("alert");
+        btn.disabled = true;
+        btn.textContent = "Entrando...";
+        alert.style.display = "none";
+
+        try {
+            const data = await login(
+                document.getElementById("correo").value,
+                document.getElementById("password").value
+            );
+            window.location.href = "dashboard.html";
+        } catch (err) {
+            alert.className = "alert alert-error";
+            alert.textContent = "⚠️ " + err.message;
+            alert.style.display = "flex";
+            btn.disabled = false;
+            btn.textContent = "Entrar";
+        }
+    });
+</script>
+</body>
+</html>
