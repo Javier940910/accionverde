@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Panel — Áreas Verdes</title>
+  <link rel="stylesheet" href="assets/css/main.css"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="dashboard.html" class="navbar-brand"><span>🌿</span> Áreas Verdes</a>
+  <div class="navbar-right" id="navbar-user"></div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 id="welcome-title">👋 Bienvenido</h1>
+      <p id="welcome-sub" style="color:var(--text-muted);font-size:14px;margin-top:4px;"></p>
+    </div>
+  </div>
+
+  <!-- Cards de acciones según rol -->
+  <div class="cards-grid" id="action-cards"></div>
+</div>
+
+<script src="assets/js/api.js"></script>
+<script>
+  requireAuth();
+  renderNavbar();
+
+  const user = getUser();
+  document.getElementById("welcome-title").textContent = `👋 Hola, ${user.nombre}`;
+
+  const cards = {
+    ciudadano: [
+      { icon:"🗺️", title:"Ver localidades",    sub:"Explora parques de tu ciudad",          href:"localidades.html" },
+      { icon:"📋", title:"Crear reporte",        sub:"Reporta un problema en un parque",       href:"crear_reporte.html" },
+      { icon:"🙋", title:"Mis voluntariados",    sub:"Historial y certificados",               href:"mis_voluntariados.html" },
+      { icon:"👤", title:"Mi perfil",            sub:"Datos personales y privacidad",          href:"perfil.html" },
+    ],
+    convenio: [
+      { icon:"🗺️", title:"Localidades",         sub:"Gestiona parques en tus localidades",    href:"localidades.html" },
+      { icon:"🌳", title:"Agregar parque",       sub:"Registra un nuevo parque",               href:"crear_parque.html" },
+      { icon:"📋", title:"Gestionar reportes",   sub:"Ver y resolver reportes ciudadanos",     href:"gestionar_reportes.html" },
+      { icon:"📣", title:"Publicar voluntariado",sub:"Crea una actividad en un parque",        href:"crear_voluntariado.html" },
+      { icon:"✅", title:"Registrar asistencia", sub:"Valida participantes por ID",            href:"asistencia.html" },
+    ],
+    administrador: [
+      { icon:"🏢", title:"Aprobar convenios",    sub:"Revisa solicitudes pendientes",          href:"admin_convenios.html" },
+      { icon:"👥", title:"Usuarios",             sub:"Gestiona todos los usuarios",            href:"admin_usuarios.html" },
+      { icon:"🗺️", title:"Localidades",         sub:"Administra las localidades base",        href:"admin_localidades.html" },
+    ],
+  };
+
+  const subs = {
+    ciudadano:     "Participa en la conservación de parques de tu localidad",
+    convenio:      "Panel de gestión de parques y voluntariados",
+    administrador: "Panel de administración del sistema",
+  };
+
+  document.getElementById("welcome-sub").textContent = subs[user.rol] || "";
+
+  const container = document.getElementById("action-cards");
+  (cards[user.rol] || []).forEach(c => {
+    container.innerHTML += `
+      <a href="${c.href}" class="localidad-card" style="text-align:center;padding:28px 16px;">
+        <div style="font-size:40px;margin-bottom:12px;">${c.icon}</div>
+        <h3 style="font-size:15px;font-weight:600;color:var(--green-900);margin-bottom:4px;">${c.title}</h3>
+        <p style="font-size:12px;color:var(--text-muted);">${c.sub}</p>
+      </a>`;
+  });
+</script>
+</body>
+</html>

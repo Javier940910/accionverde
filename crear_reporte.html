@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Crear reporte — Áreas Verdes</title>
+  <link rel="stylesheet" href="assets/css/main.css"/>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="dashboard.html" class="navbar-brand"><span>🌿</span> Áreas Verdes</a>
+  <div class="navbar-right" id="navbar-user"></div>
+</nav>
+
+<div class="breadcrumb">
+  <a href="localidades.html">Localidades</a>
+  <span class="breadcrumb-sep">›</span>
+  <a id="bc-parque" href="#">Parque</a>
+  <span class="breadcrumb-sep">›</span>
+  <span>Crear reporte</span>
+</div>
+
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>📋 Crear reporte</h1>
+      <p id="parque-nombre-sub" style="color:var(--text-muted);font-size:14px;margin-top:4px;"></p>
+    </div>
+  </div>
+
+  <div id="alert" class="alert" style="display:none;"></div>
+
+  <div class="form-card">
+    <form id="reporteForm">
+
+      <div class="form-group">
+        <label>Descripción del problema <span class="req">*</span></label>
+        <textarea id="descripcion" class="form-control" placeholder="Describe qué está pasando en el parque..." required></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Categoría <span class="req">*</span></label>
+          <select id="categoria" class="form-control" required>
+            <option value="">Selecciona...</option>
+            <option value="basura">🗑️ Basura acumulada</option>
+            <option value="vegetacion">🌿 Vegetación descuidada</option>
+            <option value="infraestructura">🔧 Infraestructura dañada</option>
+            <option value="contaminacion">☣️ Contaminación</option>
+            <option value="otro">❓ Otro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Intervención sugerida <span class="req">*</span></label>
+          <select id="intervencion" class="form-control" required>
+            <option value="">Selecciona...</option>
+            <option value="limpieza_manual">🧹 Limpieza manual</option>
+            <option value="limpieza_mecanica">🚛 Limpieza mecánica</option>
+            <option value="restauracion">🌱 Restauración ecológica</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Fotografías <span class="req">*</span> (máximo 3)</label>
+        <div class="foto-upload-area" onclick="document.getElementById('fotos').click()">
+          <input type="file" id="fotos" name="fotos" multiple accept="image/*" onchange="previewFotos(this)"/>
+          <div class="icon">📷</div>
+          <p>Haz clic para seleccionar fotos</p>
+          <p style="font-size:11px;margin-top:4px;">JPG, PNG o WEBP — máximo 3</p>
+        </div>
+        <div class="foto-preview" id="preview"></div>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:8px;">
+        <a id="btn-cancelar" href="#" class="btn btn-secondary">Cancelar</a>
+        <button type="submit" id="btnEnviar" class="btn btn-primary">Enviar reporte</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script src="assets/js/api.js"></script>
+<script>
+  requireRol("ciudadano");
+  renderNavbar();
+
+  const params   = new URLSearchParams(location.search);
+  const parqueId = params.get("parque_id");
+  if (!parqueId) window.location.href = "localidades.html";
+
+  // Mostrar nombre del parque
+  getParque(parqueId).then(p => {
+    document.getElementById("parque-nombre-sub").textContent = "Parque: " + p.nombre;
+    document.getElementById("bc-parque").textContent         = p.nombre;
+    document.getElementById("bc-parque").href                = `parque_detalle.html?id=${p.id}`;
+    document.getElementById("btn-cancelar").href             = `parque_detalle.html?id=${p.id}`;
+  });
+
+  function previewFotos(input) {
+    const preview = document.getElementById("preview");
+    preview.innerHTML = "";
+    Array.from(input.files).slice(0, 3).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = document.createElement("img");
+        img.src = e.target.result;
+        preview.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function showAlert(msg, type) {
+    const el = document.getElementById("alert");
+    el.className = `alert alert-${type}`;
+    el.textContent = msg;
+    el.style.display = "flex";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  document.getElementById("reporteForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn   = document.getElementById("btnEnviar");
+    const fotos = document.getElementById("fotos").files;
+
+    if (!fotos.length) return showAlert("⚠️ Debes adjuntar al menos una fotografía.", "error");
+
+    const formData = new FormData();
+    formData.append("parque_id",   parqueId);
+    formData.append("descripcion", document.getElementById("descripcion").value);
+    formData.append("categoria",   document.getElementById("categoria").value);
+    formData.append("intervencion",document.getElementById("intervencion").value);
+    Array.from(fotos).slice(0, 3).forEach(f => formData.append("fotos", f));
+
+    btn.disabled    = true;
+    btn.textContent = "Enviando...";
+
+    try {
+      const res = await crearReporte(formData);
+      showAlert("✅ " + res.mensaje, "success");
+      setTimeout(() => window.location.href = `parque_detalle.html?id=${parqueId}`, 1800);
+    } catch(err) {
+      showAlert("⚠️ " + err.message, "error");
+      btn.disabled    = false;
+      btn.textContent = "Enviar reporte";
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Publicar voluntariado — Áreas Verdes</title>
+  <link rel="stylesheet" href="assets/css/main.css"/>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="dashboard.html" class="navbar-brand"><span>🌿</span> Áreas Verdes</a>
+  <div class="navbar-right" id="navbar-user"></div>
+</nav>
+
+<div class="breadcrumb">
+  <a href="dashboard.html">Panel</a>
+  <span class="breadcrumb-sep">›</span>
+  <span>Publicar voluntariado</span>
+</div>
+
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>📣 Publicar voluntariado</h1>
+      <p id="parque-sub" style="color:var(--text-muted);font-size:14px;margin-top:4px;"></p>
+    </div>
+  </div>
+
+  <div id="alert" class="alert" style="display:none;"></div>
+
+  <div class="form-card">
+    <form id="volForm">
+
+      <!-- Parque -->
+      <div class="form-group">
+        <label>Parque <span class="req">*</span></label>
+        <select id="parque_id" class="form-control" required>
+          <option value="">Cargando parques...</option>
+        </select>
+        <p class="form-hint">Solo se muestran los parques que tienes registrados</p>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;"/>
+
+      <div class="form-group">
+        <label>Título <span class="req">*</span></label>
+        <input type="text" id="titulo" class="form-control" placeholder="Ej: Jornada de limpieza Parque El Virrey" required/>
+      </div>
+
+      <div class="form-group">
+        <label>Descripción <span class="req">*</span></label>
+        <textarea id="descripcion" class="form-control" placeholder="Describe la actividad, qué se hará, qué llevar..." required></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Fecha <span class="req">*</span></label>
+          <input type="date" id="fecha" class="form-control" required/>
+        </div>
+        <div class="form-group">
+          <label>Hora <span class="req">*</span></label>
+          <input type="time" id="hora" class="form-control" required/>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Duración (horas) <span class="req">*</span></label>
+          <input type="number" id="duracion_horas" class="form-control" min="0.5" max="12" step="0.5" placeholder="Ej: 3" required/>
+        </div>
+        <div class="form-group">
+          <label>Cupos disponibles <span class="req">*</span></label>
+          <input type="number" id="cupos_total" class="form-control" min="1" max="500" placeholder="Ej: 30" required/>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Edad mínima <span class="req">*</span></label>
+          <input type="number" id="edad_minima" class="form-control" min="14" max="99" value="18" required/>
+        </div>
+        <div class="form-group">
+          <label>Tipo de actividad <span class="req">*</span></label>
+          <select id="tipo_actividad" class="form-control" required>
+            <option value="">Selecciona...</option>
+            <option value="limpieza_manual">🧹 Limpieza manual</option>
+            <option value="limpieza_mecanica">🚛 Limpieza mecánica</option>
+            <option value="restauracion">🌱 Restauración ecológica</option>
+            <option value="siembra">🌳 Siembra</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:8px;">
+        <a href="dashboard.html" class="btn btn-secondary">Cancelar</a>
+        <button type="submit" id="btnPublicar" class="btn btn-primary">📣 Publicar voluntariado</button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script src="assets/js/api.js"></script>
+<script>
+  requireRol("convenio");
+  renderNavbar();
+
+  const params   = new URLSearchParams(location.search);
+  const parqueId = params.get("parque_id");
+
+  // Fecha mínima = hoy
+  document.getElementById("fecha").min = new Date().toISOString().split("T")[0];
+
+  // Cargar parques del convenio para el select
+  // Usamos localidades → parques del convenio (simplificado: cargamos todas las localidades)
+  async function cargarParques() {
+    try {
+      const localidades = await getLocalidades();
+      const select      = document.getElementById("parque_id");
+      select.innerHTML  = '<option value="">Selecciona un parque...</option>';
+      for (const loc of localidades) {
+        const parques = await getParques(loc.id);
+        parques.forEach(p => {
+          const opt = document.createElement("option");
+          opt.value       = p.id;
+          opt.textContent = `${p.nombre} (${loc.nombre})`;
+          if (String(p.id) === parqueId) opt.selected = true;
+          select.appendChild(opt);
+        });
+      }
+      if (parqueId) {
+        getParque(parqueId).then(p =>
+          document.getElementById("parque-sub").textContent = "Parque: " + p.nombre
+        );
+      }
+    } catch(err) {
+      document.getElementById("parque_id").innerHTML = `<option value="">Error al cargar parques</option>`;
+    }
+  }
+  cargarParques();
+
+  function showAlert(msg, type) {
+    const el = document.getElementById("alert");
+    el.className      = `alert alert-${type}`;
+    el.textContent    = msg;
+    el.style.display  = "flex";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  document.getElementById("volForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById("btnPublicar");
+    btn.disabled    = true;
+    btn.textContent = "Publicando...";
+
+    try {
+      const res = await apiFetch("/voluntariados", {
+        method: "POST",
+        body: JSON.stringify({
+          parque_id:      parseInt(document.getElementById("parque_id").value),
+          titulo:         document.getElementById("titulo").value,
+          descripcion:    document.getElementById("descripcion").value,
+          fecha:          document.getElementById("fecha").value,
+          hora:           document.getElementById("hora").value,
+          duracion_horas: parseFloat(document.getElementById("duracion_horas").value),
+          cupos_total:    parseInt(document.getElementById("cupos_total").value),
+          edad_minima:    parseInt(document.getElementById("edad_minima").value),
+          tipo_actividad: document.getElementById("tipo_actividad").value,
+        })
+      });
+      showAlert("✅ " + res.mensaje, "success");
+      setTimeout(() => window.location.href = `parque_detalle.html?id=${document.getElementById("parque_id").value}`, 1800);
+    } catch(err) {
+      showAlert("⚠️ " + err.message, "error");
+      btn.disabled    = false;
+      btn.textContent = "📣 Publicar voluntariado";
+    }
+  });
+</script>
+</body>
+</html>

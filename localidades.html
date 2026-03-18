@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Localidades — Áreas Verdes</title>
+  <link rel="stylesheet" href="assets/css/main.css"/>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="dashboard.html" class="navbar-brand"><span>🌿</span> Áreas Verdes</a>
+  <div class="navbar-right" id="navbar-user"></div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>🗺️ Localidades</h1>
+      <p>Selecciona una localidad para ver sus parques</p>
+    </div>
+  </div>
+
+  <div id="loading" class="empty-state"><div class="icon">⏳</div><p>Cargando localidades...</p></div>
+  <div class="cards-grid" id="grid" style="display:none;"></div>
+</div>
+
+<script src="assets/js/api.js"></script>
+<script>
+  requireAuth();
+  renderNavbar();
+
+  const emojis = ["🌳","🌲","🍃","🌿","🌱","🏞️","🌾","🍀","🌴","🌵","🎋","🪴","🌻","🌼","🌺","🦋","🐝","🌊","⛰️","🏔️"];
+
+  getLocalidades().then(data => {
+    document.getElementById("loading").style.display = "none";
+    const grid = document.getElementById("grid");
+    grid.style.display = "grid";
+
+    if (!data.length) {
+      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+        <div class="icon">🗺️</div><h3>No hay localidades disponibles</h3>
+      </div>`;
+      return;
+    }
+
+    data.forEach((loc, i) => {
+      grid.innerHTML += `
+        <a href="parques.html?localidad_id=${loc.id}&nombre=${encodeURIComponent(loc.nombre)}" class="localidad-card">
+          <div class="thumb">${emojis[i % emojis.length]}</div>
+          <div class="info">
+            <h3>${loc.nombre}</h3>
+            <p>Ver parques →</p>
+          </div>
+        </a>`;
+    });
+  }).catch(err => {
+    document.getElementById("loading").innerHTML = `
+      <div class="icon">⚠️</div><h3>Error al cargar</h3><p>${err.message}</p>`;
+  });
+</script>
+</body>
+</html>

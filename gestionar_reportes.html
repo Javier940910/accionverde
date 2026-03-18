@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gestionar reportes — Áreas Verdes</title>
+  <link rel="stylesheet" href="assets/css/main.css"/>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="dashboard.html" class="navbar-brand"><span>🌿</span> Áreas Verdes</a>
+  <div class="navbar-right" id="navbar-user"></div>
+</nav>
+
+<div class="breadcrumb">
+  <a href="dashboard.html">Panel</a>
+  <span class="breadcrumb-sep">›</span>
+  <span id="bc-title">Gestionar reportes</span>
+</div>
+
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1>📋 Gestionar reportes</h1>
+      <p id="page-sub" style="color:var(--text-muted);font-size:14px;margin-top:4px;"></p>
+    </div>
+    <a id="btn-volver" href="#" class="btn btn-secondary" style="display:none;">← Ver parque</a>
+  </div>
+
+  <div id="alert" class="alert alert-success" style="display:none;"></div>
+  <div id="contenido"><div class="empty-state"><div class="icon">⏳</div><p>Cargando...</p></div></div>
+</div>
+
+<script src="assets/js/api.js"></script>
+<script>
+  requireRol("convenio");
+  renderNavbar();
+
+  const params   = new URLSearchParams(location.search);
+  const parqueId = params.get("parque_id");
+
+  const cats  = { basura:"🗑️ Basura", vegetacion:"🌿 Vegetación", infraestructura:"🔧 Infraestructura", contaminacion:"☣️ Contaminación", otro:"❓ Otro" };
+  const ints  = { limpieza_manual:"🧹 Manual", limpieza_mecanica:"🚛 Mecánica", restauracion:"🌱 Restauración" };
+
+  if (parqueId) {
+    document.getElementById("btn-volver").style.display = "inline-flex";
+    document.getElementById("btn-volver").href          = `parque_detalle.html?id=${parqueId}`;
+
+    getParque(parqueId).then(p => {
+      document.getElementById("bc-title").textContent  = p.nombre;
+      document.getElementById("page-sub").textContent  = p.nombre;
+    });
+
+    cargarReportes(parqueId);
+  } else {
+    document.getElementById("page-sub").textContent = "Selecciona un parque para ver sus reportes";
+    document.getElementById("contenido").innerHTML = `
+      <div class="alert alert-info">
+        ℹ️ Accede desde la tarjeta de un parque para ver sus reportes.
+        <a href="localidades.html" class="btn btn-secondary btn-sm" style="margin-left:12px;">Ir a localidades</a>
+      </div>`;
+  }
+
+  function cargarReportes(pid) {
+    getReportes(pid).then(data => {
+      const { pendientes, resueltos } = data;
+      document.getElementById("page-sub").textContent =
+        `${pendientes.length} pendiente(s) · ${resueltos.length} resuelto(s)`;
+
+      let html = "";
+
+      // PENDIENTES
+      if (pendientes.length) {
+        html += `<h2 style="font-size:17px;color:#c62828;margin-bottom:16px;">⚠️ Reportes pendientes</h2>
+        <div class="table-card" style="margin-bottom:32px;overflow-x:auto;">
+          <table>
+            <thead><tr>
+              <th>Fecha</th><th>Ciudadano</th><th>Categoría</th><th>Intervención</th><th>Descripción</th><th>Acción</th>
+            </tr></thead>
+            <tbody>
+              ${pendientes.map(r => `
+                <tr>
+                  <td style="white-space:nowrap;font-size:12px;">${new Date(r.created_at).toLocaleDateString("es-CO")}</td>
+                  <td>${r.ciudadano_nombre}</td>
+                  <td>${cats[r.categoria] || r.categoria}</td>
+                  <td>${ints[r.intervencion] || r.intervencion}</td>
+                  <td style="max-width:240px;font-size:13px;">${r.descripcion.slice(0,80)}...</td>
+                  <td>
+                    <button class="btn btn-primary btn-sm" onclick="resolver(${r.id})">✅ Resolver</button>
+                  </td>
+                </tr>`).join("")}
+            </tbody>
+          </table>
+        </div>`;
+      } else {
+        html += `<div class="alert alert-success" style="margin-bottom:24px;">✅ No hay reportes pendientes en este parque.</div>`;
+      }
+
+      // RESUELTOS
+      if (resueltos.length) {
+        html += `<h2 style="font-size:17px;color:var(--green-800);margin-bottom:16px;">✅ Reportes resueltos</h2>
+        <div class="table-card" style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Resuelto</th><th>Ciudadano</th><th>Categoría</th><th>Descripción</th></tr></thead>
+            <tbody>
+              ${resueltos.map(r => `
+                <tr style="opacity:.7;">
+                  <td style="font-size:12px;white-space:nowrap;">${new Date(r.resuelto_at).toLocaleDateString("es-CO")}</td>
+                  <td>${r.ciudadano_nombre}</td>
+                  <td>${cats[r.categoria] || r.categoria}</td>
+                  <td style="max-width:280px;font-size:13px;">${r.descripcion.slice(0,80)}...</td>
+                </tr>`).join("")}
+            </tbody>
+          </table>
+        </div>`;
+      }
+
+      document.getElementById("contenido").innerHTML = html;
+    });
+  }
+
+  async function resolver(reporteId) {
+    if (!confirm("¿Marcar este reporte como resuelto?")) return;
+    try {
+      const res = await resolverReporte(reporteId);
+      const al  = document.getElementById("alert");
+      al.textContent    = "✅ " + res.mensaje;
+      al.style.display  = "flex";
+      cargarReportes(parqueId);
+      setTimeout(() => al.style.display = "none", 3000);
+    } catch(err) {
+      alert("⚠️ " + err.message);
+    }
+  }
+</script>
+</body>
+</html>

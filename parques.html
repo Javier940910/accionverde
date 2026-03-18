@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Parques — Áreas Verdes</title>
+  <link rel="stylesheet" href="assets/css/main.css"/>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="dashboard.html" class="navbar-brand"><span>🌿</span> Áreas Verdes</a>
+  <div class="navbar-right" id="navbar-user"></div>
+</nav>
+
+<div class="breadcrumb">
+  <a href="localidades.html">Localidades</a>
+  <span class="breadcrumb-sep">›</span>
+  <span id="bc-localidad">...</span>
+</div>
+
+<div class="page">
+  <div class="page-header">
+    <div>
+      <h1 id="page-title">🌳 Parques</h1>
+      <p id="page-sub" style="color:var(--text-muted);font-size:14px;margin-top:4px;"></p>
+    </div>
+    <div id="btn-agregar" style="display:none;">
+      <a id="link-agregar" href="#" class="btn btn-primary">+ Agregar parque</a>
+    </div>
+  </div>
+
+  <div id="loading" class="empty-state"><div class="icon">⏳</div><p>Cargando parques...</p></div>
+  <div class="cards-grid" id="grid" style="display:none;"></div>
+</div>
+
+<script src="assets/js/api.js"></script>
+<script>
+  requireAuth();
+  renderNavbar();
+
+  const params      = new URLSearchParams(location.search);
+  const localidadId = params.get("localidad_id");
+  const nombre      = params.get("nombre") || "Localidad";
+
+  if (!localidadId) window.location.href = "localidades.html";
+
+  document.getElementById("bc-localidad").textContent = nombre;
+  document.getElementById("page-title").textContent   = "🌳 " + nombre;
+
+  // Mostrar botón agregar si es convenio
+  if (getRol() === "convenio") {
+    document.getElementById("btn-agregar").style.display = "block";
+    document.getElementById("link-agregar").href = `crear_parque.html?localidad_id=${localidadId}`;
+  }
+
+  getParques(localidadId).then(data => {
+    document.getElementById("loading").style.display = "none";
+    const grid = document.getElementById("grid");
+    grid.style.display = "grid";
+
+    document.getElementById("page-sub").textContent = `${data.length} parque(s) en esta localidad`;
+
+    if (!data.length) {
+      grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+        <div class="icon">🌿</div>
+        <h3>No hay parques registrados</h3>
+        <p>Aún no se han agregado parques en esta localidad.</p>
+      </div>`;
+      return;
+    }
+
+    data.forEach(p => {
+      const badgeRunap  = p.es_area_protegida
+        ? `<span class="badge-pill badge-protected">🛡️ RUNAP</span>` : "";
+      const badgeNuevo  = p.voluntariados_nuevos > 0
+        ? `<span class="badge-pill badge-new">🆕 Nuevo voluntariado</span>` : "";
+      const statReportes = p.reportes_activos > 0
+        ? `<span class="stat" style="color:#c62828;">⚠️ ${p.reportes_activos} reporte(s)</span>` : "";
+      const statVol = p.voluntariados_activos > 0
+        ? `<span class="stat" style="color:#e65100;">🙋 ${p.voluntariados_activos} voluntariado(s)</span>` : "";
+      const sinNov = !p.reportes_activos && !p.voluntariados_activos
+        ? `<span class="stat">✅ Sin novedades</span>` : "";
+
+      grid.innerHTML += `
+        <a href="parque_detalle.html?id=${p.id}" class="parque-card">
+          <div class="thumb">
+            <div class="placeholder">🌳</div>
+            <div class="badges">${badgeNuevo}${badgeRunap}</div>
+          </div>
+          <div class="info">
+            <h3>${p.nombre}</h3>
+            ${p.direccion ? `<p>📍 ${p.direccion}</p>` : ""}
+            <div class="stats">${statReportes}${statVol}${sinNov}</div>
+          </div>
+        </a>`;
+    });
+  }).catch(err => {
+    document.getElementById("loading").innerHTML =
+      `<div class="icon">⚠️</div><h3>Error al cargar</h3><p>${err.message}</p>`;
+  });
+</script>
+</body>
+</html>

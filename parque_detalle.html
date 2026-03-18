@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Parque — Áreas Verdes</title>
+  <link rel="stylesheet" href="assets/css/main.css"/>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="dashboard.html" class="navbar-brand"><span>🌿</span> Áreas Verdes</a>
+  <div class="navbar-right" id="navbar-user"></div>
+</nav>
+
+<div class="breadcrumb">
+  <a href="localidades.html">Localidades</a>
+  <span class="breadcrumb-sep">›</span>
+  <a id="bc-localidad" href="#">...</a>
+  <span class="breadcrumb-sep">›</span>
+  <span id="bc-parque">...</span>
+</div>
+
+<div class="page">
+
+  <!-- Header parque -->
+  <div id="parque-header" style="background:white;border-radius:12px;overflow:hidden;box-shadow:var(--shadow-sm);border:1px solid var(--border);margin-bottom:28px;">
+    <div style="height:200px;background:linear-gradient(135deg,#66bb6a,#1b5e20);display:flex;align-items:center;justify-content:center;font-size:72px;">🌳</div>
+    <div style="padding:24px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;">
+      <div>
+        <h1 id="parque-nombre" style="font-family:'Fraunces',serif;font-size:24px;color:var(--green-900);margin-bottom:6px;"></h1>
+        <p id="parque-dir"  style="color:var(--text-muted);font-size:14px;"></p>
+        <p id="parque-desc" style="font-size:14px;margin-top:8px;max-width:600px;"></p>
+      </div>
+      <div id="parque-acciones" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
+    </div>
+  </div>
+
+  <!-- Voluntariados -->
+  <h2 style="font-family:'Fraunces',serif;font-size:20px;color:var(--green-900);margin-bottom:16px;">🙋 Voluntariados disponibles</h2>
+  <div id="voluntariados-container">
+    <div class="empty-state"><div class="icon">⏳</div><p>Cargando...</p></div>
+  </div>
+
+</div>
+
+<script src="assets/js/api.js"></script>
+<script>
+  requireAuth();
+  renderNavbar();
+
+  const params   = new URLSearchParams(location.search);
+  const parqueId = params.get("id");
+  if (!parqueId) window.location.href = "localidades.html";
+
+  const rol = getRol();
+
+  // Cargar parque
+  getParque(parqueId).then(p => {
+    document.title = p.nombre + " — Áreas Verdes";
+    document.getElementById("bc-parque").textContent    = p.nombre;
+    document.getElementById("bc-localidad").textContent = p.localidad_nombre;
+    document.getElementById("bc-localidad").href        = `parques.html?localidad_id=${p.localidad_id}&nombre=${encodeURIComponent(p.localidad_nombre)}`;
+    document.getElementById("parque-nombre").innerHTML  = p.nombre +
+      (p.es_area_protegida ? ` <span class="badge-pill badge-protected" style="font-size:12px;vertical-align:middle;">🛡️ RUNAP</span>` : "");
+    if (p.direccion)   document.getElementById("parque-dir").textContent  = "📍 " + p.direccion;
+    if (p.descripcion) document.getElementById("parque-desc").textContent = p.descripcion;
+
+    // Botones según rol
+    const acc = document.getElementById("parque-acciones");
+    if (rol === "ciudadano") {
+      acc.innerHTML = `<a href="crear_reporte.html?parque_id=${p.id}" class="btn btn-primary">📋 Crear reporte</a>`;
+    } else if (rol === "convenio") {
+      acc.innerHTML = `
+        <a href="crear_voluntariado.html?parque_id=${p.id}" class="btn btn-primary">+ Publicar voluntariado</a>
+        <a href="gestionar_reportes.html?parque_id=${p.id}" class="btn btn-secondary">Ver reportes</a>`;
+    }
+  });
+
+  // Cargar voluntariados
+  getVoluntariados(parqueId).then(data => {
+    const cont = document.getElementById("voluntariados-container");
+    if (!data.length) {
+      cont.innerHTML = `<div class="empty-state" style="padding:40px;">
+        <div class="icon">📣</div>
+        <h3>No hay voluntariados activos</h3>
+        <p>Cuando un convenio publique una actividad aparecerá aquí.</p>
+      </div>`;
+      return;
+    }
+
+    cont.innerHTML = data.map(v => {
+      const org     = v.razon_social || v.convenio_nombre;
+      const esNuevo = new Date(v.created_at) > new Date(Date.now() - 48*3600*1000);
+      const sinCupo = v.cupos_disponibles <= 0;
+      const fecha   = new Date(v.fecha).toLocaleDateString("es-CO");
+
+      let btnInscripcion = "";
+      if (rol === "ciudadano") {
+        btnInscripcion = sinCupo
+          ? `<span class="btn btn-secondary btn-sm" style="opacity:.6;cursor:default;">Sin cupos</span>`
+          : `<button class="btn btn-accent btn-sm" onclick="inscribirseVol(${v.id})">🙋 Inscribirme</button>`;
+      }
+
+      return `
+        <div class="vol-card">
+          <div class="vol-header">
+            <div>
+              <h3>${v.titulo} ${esNuevo ? '<span class="badge-pill badge-new" style="font-size:11px;vertical-align:middle;margin-left:6px;">Nuevo</span>' : ""}</h3>
+              <p style="font-size:13px;color:var(--text-muted);margin-top:4px;">Organizado por <strong>${org}</strong></p>
+            </div>
+            <div class="cupos ${sinCupo ? "cupos-agotados" : ""}">
+              ${sinCupo ? "❌ Sin cupos" : "✅ " + v.cupos_disponibles + " cupo(s)"}
+            </div>
+          </div>
+          <div class="vol-meta">
+            <span>📅 ${fecha}</span>
+            <span>🕐 ${v.hora.slice(0,5)}</span>
+            <span>⏱️ ${v.duracion_horas}h</span>
+            <span>🔞 Edad mínima: ${v.edad_minima} años</span>
+            <span>🏷️ ${v.tipo_actividad.replace("_"," ")}</span>
+          </div>
+          ${v.descripcion ? `<p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">${v.descripcion}</p>` : ""}
+          ${btnInscripcion}
+        </div>`;
+    }).join("");
+  });
+
+  async function inscribirseVol(volId) {
+    try {
+      const res = await inscribirse(volId);
+      alert("✅ " + res.mensaje);
+      location.reload();
+    } catch(err) {
+      alert("⚠️ " + err.message);
+    }
+  }
+</script>
+</body>
+</html>

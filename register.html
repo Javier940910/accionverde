@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registro — Áreas Verdes</title>
+  <link rel="stylesheet" href="assets/css/main.css"/>
+</head>
+<body style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;">
+
+<div class="form-card" style="max-width:500px;width:100%;">
+  <h1 style="font-family:'Fraunces',serif;color:var(--green-900);font-size:26px;margin-bottom:4px;">🌿 Crear cuenta</h1>
+  <p style="color:var(--text-muted);font-size:14px;margin-bottom:24px;">Áreas Verdes y Voluntariado Ambiental</p>
+
+  <div id="alert" class="alert" style="display:none;"></div>
+
+  <form id="registerForm">
+
+    <!-- Tipo de usuario -->
+    <div class="form-group">
+      <label>Soy... <span class="req">*</span></label>
+      <select id="tipo_usuario" class="form-control" onchange="toggleFields()" required>
+        <option value="">Selecciona tu tipo de usuario</option>
+        <option value="ciudadano">🙋 Ciudadano</option>
+        <option value="convenio">🏢 Representante de Convenio</option>
+      </select>
+    </div>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;"/>
+
+    <!-- Campos comunes -->
+    <div class="form-group">
+      <label>Nombre completo <span class="req">*</span></label>
+      <input type="text" id="nombre" class="form-control" placeholder="Tu nombre completo" required/>
+    </div>
+    <div class="form-group">
+      <label>Correo electrónico <span class="req">*</span></label>
+      <input type="email" id="correo" class="form-control" placeholder="correo@ejemplo.com" required/>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Contraseña <span class="req">*</span></label>
+        <input type="password" id="password" class="form-control" placeholder="Mínimo 8 caracteres" required/>
+      </div>
+      <div class="form-group">
+        <label>Confirmar contraseña <span class="req">*</span></label>
+        <input type="password" id="confirm" class="form-control" placeholder="Repite tu contraseña" required/>
+      </div>
+    </div>
+
+    <!-- Campos ciudadano -->
+    <div id="fields-ciudadano" style="display:none;">
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;"/>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="text" id="telefono" class="form-control" placeholder="3001234567"/>
+        </div>
+        <div class="form-group">
+          <label>Localidad de residencia</label>
+          <input type="text" id="localidad" class="form-control" placeholder="Ej: Usaquén"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Campos convenio -->
+    <div id="fields-convenio" style="display:none;">
+      <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;"/>
+      <div class="form-row">
+        <div class="form-group">
+          <label>NIT <span class="req">*</span></label>
+          <input type="text" id="nit" class="form-control" placeholder="900123456-1"/>
+        </div>
+        <div class="form-group">
+          <label>Razón social <span class="req">*</span></label>
+          <input type="text" id="razon_social" class="form-control" placeholder="Nombre legal"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Cargo <span class="req">*</span></label>
+          <input type="text" id="cargo" class="form-control" placeholder="Ej: Gerente"/>
+        </div>
+        <div class="form-group">
+          <label>Correo corporativo <span class="req">*</span></label>
+          <input type="email" id="correo_corporativo" class="form-control" placeholder="nombre@empresa.com"/>
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" id="btnRegister" class="btn btn-primary btn-full" style="margin-top:8px;">
+      Crear cuenta
+    </button>
+  </form>
+
+  <p style="text-align:center;margin-top:16px;font-size:13px;color:var(--text-muted);">
+    ¿Ya tienes cuenta? <a href="login.html" style="color:var(--green-700);font-weight:600;">Inicia sesión</a>
+  </p>
+</div>
+
+<script src="assets/js/api.js"></script>
+<script>
+  if (isLoggedIn()) window.location.href = "dashboard.html";
+
+  function toggleFields() {
+    const tipo = document.getElementById("tipo_usuario").value;
+    document.getElementById("fields-ciudadano").style.display = tipo === "ciudadano" ? "block" : "none";
+    document.getElementById("fields-convenio").style.display  = tipo === "convenio"  ? "block" : "none";
+  }
+
+  function showAlert(msg, type) {
+    const el = document.getElementById("alert");
+    el.className = `alert alert-${type}`;
+    el.textContent = msg;
+    el.style.display = "flex";
+    el.scrollIntoView({ behavior: "smooth" });
+  }
+
+  document.getElementById("registerForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn  = document.getElementById("btnRegister");
+    const tipo = document.getElementById("tipo_usuario").value;
+
+    if (!tipo) return showAlert("Selecciona tu tipo de usuario.", "error");
+    if (document.getElementById("password").value !== document.getElementById("confirm").value)
+      return showAlert("Las contraseñas no coinciden.", "error");
+
+    btn.disabled = true;
+    btn.textContent = "Creando cuenta...";
+
+    try {
+      let msg;
+      if (tipo === "ciudadano") {
+        const res = await registerCiudadano({
+          nombre:   document.getElementById("nombre").value,
+          correo:   document.getElementById("correo").value,
+          password: document.getElementById("password").value,
+          telefono: document.getElementById("telefono").value || null,
+          localidad:document.getElementById("localidad").value || null,
+        });
+        msg = res.mensaje;
+      } else {
+        const res = await registerConvenio({
+          nombre:             document.getElementById("nombre").value,
+          correo:             document.getElementById("correo").value,
+          password:           document.getElementById("password").value,
+          nit:                document.getElementById("nit").value,
+          razon_social:       document.getElementById("razon_social").value,
+          cargo:              document.getElementById("cargo").value,
+          correo_corporativo: document.getElementById("correo_corporativo").value,
+        });
+        msg = res.mensaje;
+      }
+      showAlert("✅ " + msg, "success");
+      setTimeout(() => window.location.href = "login.html", 2000);
+    } catch (err) {
+      showAlert("⚠️ " + err.message, "error");
+      btn.disabled = false;
+      btn.textContent = "Crear cuenta";
+    }
+  });
+</script>
+</body>
+</html>
